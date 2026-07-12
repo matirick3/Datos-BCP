@@ -1,4 +1,4 @@
-name: Actualizar boletín BCP
+name: .github/workflows/actualizar boletín BCP
 
 on:
   schedule:
