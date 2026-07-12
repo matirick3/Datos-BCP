@@ -1,0 +1,1434 @@
+{
+  "actualizado": "2026-07-08T23:40:26.804Z",
+  "fuente": "https://www.bcp.gov.py/documents/20117/2502605/1.+Bolet%C3%ADn+Bancos+May26+4.xlsm/0c1adf04-6a34-cc04-d188-8c14229c8898?t=1782317455148",
+  "records": [
+    {
+      "periodo": "2026-05",
+      "sector": "ACTIVIDADES INMOBILIARIAS",
+      "banco": "Atlas",
+      "monto": 158757.804569
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "ACTIVIDADES INMOBILIARIAS",
+      "banco": "Bancop",
+      "monto": 23620.336055
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "ACTIVIDADES INMOBILIARIAS",
+      "banco": "Basa",
+      "monto": 594917.10365382
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "ACTIVIDADES INMOBILIARIAS",
+      "banco": "BNA",
+      "monto": 14652.460517
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "ACTIVIDADES INMOBILIARIAS",
+      "banco": "BNF",
+      "monto": 41332.974266000005
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "ACTIVIDADES INMOBILIARIAS",
+      "banco": "Citibank",
+      "monto": 0
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "ACTIVIDADES INMOBILIARIAS",
+      "banco": "Continental",
+      "monto": 1194171.67698359
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "ACTIVIDADES INMOBILIARIAS",
+      "banco": "Do Brasil",
+      "monto": 0
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "ACTIVIDADES INMOBILIARIAS",
+      "banco": "Familiar",
+      "monto": 0
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "ACTIVIDADES INMOBILIARIAS",
+      "banco": "GNB",
+      "monto": 379321.64755299996
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "ACTIVIDADES INMOBILIARIAS",
+      "banco": "Interfisa",
+      "monto": 96337.12878900001
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "ACTIVIDADES INMOBILIARIAS",
+      "banco": "Itaú",
+      "monto": 736690.1715289999
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "ACTIVIDADES INMOBILIARIAS",
+      "banco": "Solar",
+      "monto": 38.597393
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "ACTIVIDADES INMOBILIARIAS",
+      "banco": "Sudameris",
+      "monto": 770442.330737
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "ACTIVIDADES INMOBILIARIAS",
+      "banco": "UENO",
+      "monto": 674865.0906779999
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "ACTIVIDADES INMOBILIARIAS",
+      "banco": "Zeta",
+      "monto": 220827.78825178003
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "ACTIVIDADES INMOBILIARIAS",
+      "banco": "Sistema",
+      "monto": 4905975.110975191
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "ADMINISTRACION PUBLICA",
+      "banco": "Atlas",
+      "monto": 110587.794813
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "ADMINISTRACION PUBLICA",
+      "banco": "Bancop",
+      "monto": 56642.322256
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "ADMINISTRACION PUBLICA",
+      "banco": "Basa",
+      "monto": 163188.460617
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "ADMINISTRACION PUBLICA",
+      "banco": "BNA",
+      "monto": 23.845614
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "ADMINISTRACION PUBLICA",
+      "banco": "BNF",
+      "monto": 1774.304978
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "ADMINISTRACION PUBLICA",
+      "banco": "Citibank",
+      "monto": 72628.68765457
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "ADMINISTRACION PUBLICA",
+      "banco": "Continental",
+      "monto": 1966346.76939695
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "ADMINISTRACION PUBLICA",
+      "banco": "Do Brasil",
+      "monto": 0
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "ADMINISTRACION PUBLICA",
+      "banco": "Familiar",
+      "monto": 0
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "ADMINISTRACION PUBLICA",
+      "banco": "GNB",
+      "monto": 723491.3434199999
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "ADMINISTRACION PUBLICA",
+      "banco": "Interfisa",
+      "monto": 33711.521604
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "ADMINISTRACION PUBLICA",
+      "banco": "Itaú",
+      "monto": 674652.255202
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "ADMINISTRACION PUBLICA",
+      "banco": "Solar",
+      "monto": 41869.684563
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "ADMINISTRACION PUBLICA",
+      "banco": "Sudameris",
+      "monto": 635268.5506340001
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "ADMINISTRACION PUBLICA",
+      "banco": "UENO",
+      "monto": 76875.25640900001
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "ADMINISTRACION PUBLICA",
+      "banco": "Zeta",
+      "monto": 65455.738844
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "ADMINISTRACION PUBLICA",
+      "banco": "Sistema",
+      "monto": 4622516.53600552
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "AGRICULTURA",
+      "banco": "Atlas",
+      "monto": 1671318.2893679999
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "AGRICULTURA",
+      "banco": "Bancop",
+      "monto": 1155630.251806
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "AGRICULTURA",
+      "banco": "Basa",
+      "monto": 822331.644858
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "AGRICULTURA",
+      "banco": "BNA",
+      "monto": 53102.25219500001
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "AGRICULTURA",
+      "banco": "BNF",
+      "monto": 3036301.094881
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "AGRICULTURA",
+      "banco": "Citibank",
+      "monto": 0
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "AGRICULTURA",
+      "banco": "Continental",
+      "monto": 3652733.18096698
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "AGRICULTURA",
+      "banco": "Do Brasil",
+      "monto": 321477.98843800003
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "AGRICULTURA",
+      "banco": "Familiar",
+      "monto": 824602.3935710001
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "AGRICULTURA",
+      "banco": "GNB",
+      "monto": 4067737.333343
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "AGRICULTURA",
+      "banco": "Interfisa",
+      "monto": 310899.36504299997
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "AGRICULTURA",
+      "banco": "Itaú",
+      "monto": 2314308.238335
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "AGRICULTURA",
+      "banco": "Solar",
+      "monto": 175072.10177299997
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "AGRICULTURA",
+      "banco": "Sudameris",
+      "monto": 7589095.604897
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "AGRICULTURA",
+      "banco": "UENO",
+      "monto": 412630.64731000003
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "AGRICULTURA",
+      "banco": "Zeta",
+      "monto": 564511.72883852
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "AGRICULTURA",
+      "banco": "Sistema",
+      "monto": 26971752.115623496
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "COMERCIO AL POR MAYOR",
+      "banco": "Atlas",
+      "monto": 847158.5023159999
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "COMERCIO AL POR MAYOR",
+      "banco": "Bancop",
+      "monto": 682325.483942
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "COMERCIO AL POR MAYOR",
+      "banco": "Basa",
+      "monto": 1073308.5549680002
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "COMERCIO AL POR MAYOR",
+      "banco": "BNA",
+      "monto": 41498.474947
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "COMERCIO AL POR MAYOR",
+      "banco": "BNF",
+      "monto": 1106671.761196
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "COMERCIO AL POR MAYOR",
+      "banco": "Citibank",
+      "monto": 3183.64195858
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "COMERCIO AL POR MAYOR",
+      "banco": "Continental",
+      "monto": 5845845.67058185
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "COMERCIO AL POR MAYOR",
+      "banco": "Do Brasil",
+      "monto": 118520.02178800001
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "COMERCIO AL POR MAYOR",
+      "banco": "Familiar",
+      "monto": 962745.888927
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "COMERCIO AL POR MAYOR",
+      "banco": "GNB",
+      "monto": 4217941.516358
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "COMERCIO AL POR MAYOR",
+      "banco": "Interfisa",
+      "monto": 483780.520718
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "COMERCIO AL POR MAYOR",
+      "banco": "Itaú",
+      "monto": 3775492.947643
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "COMERCIO AL POR MAYOR",
+      "banco": "Solar",
+      "monto": 440326.91222199996
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "COMERCIO AL POR MAYOR",
+      "banco": "Sudameris",
+      "monto": 4512377.324928001
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "COMERCIO AL POR MAYOR",
+      "banco": "UENO",
+      "monto": 593321.277591
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "COMERCIO AL POR MAYOR",
+      "banco": "Zeta",
+      "monto": 450400.22777040006
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "COMERCIO AL POR MAYOR",
+      "banco": "Sistema",
+      "monto": 25154898.727854826
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "COMERCIO AL POR MENOR",
+      "banco": "Atlas",
+      "monto": 554319.112713
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "COMERCIO AL POR MENOR",
+      "banco": "Bancop",
+      "monto": 354514.606059
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "COMERCIO AL POR MENOR",
+      "banco": "Basa",
+      "monto": 315600.63025399996
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "COMERCIO AL POR MENOR",
+      "banco": "BNA",
+      "monto": 68817.822146
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "COMERCIO AL POR MENOR",
+      "banco": "BNF",
+      "monto": 933409.16337
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "COMERCIO AL POR MENOR",
+      "banco": "Citibank",
+      "monto": 57075.90688879001
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "COMERCIO AL POR MENOR",
+      "banco": "Continental",
+      "monto": 3365230.04938498
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "COMERCIO AL POR MENOR",
+      "banco": "Do Brasil",
+      "monto": 4270.494649
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "COMERCIO AL POR MENOR",
+      "banco": "Familiar",
+      "monto": 474336.010136
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "COMERCIO AL POR MENOR",
+      "banco": "GNB",
+      "monto": 1619014.673262
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "COMERCIO AL POR MENOR",
+      "banco": "Interfisa",
+      "monto": 297667.52815872995
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "COMERCIO AL POR MENOR",
+      "banco": "Itaú",
+      "monto": 1389561.421635
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "COMERCIO AL POR MENOR",
+      "banco": "Solar",
+      "monto": 68701.157656
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "COMERCIO AL POR MENOR",
+      "banco": "Sudameris",
+      "monto": 568506.0981840001
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "COMERCIO AL POR MENOR",
+      "banco": "UENO",
+      "monto": 383956.314407
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "COMERCIO AL POR MENOR",
+      "banco": "Zeta",
+      "monto": 405503.28716364
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "COMERCIO AL POR MENOR",
+      "banco": "Sistema",
+      "monto": 10860484.27606714
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "CONSTRUCCION",
+      "banco": "Atlas",
+      "monto": 174405.514869
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "CONSTRUCCION",
+      "banco": "Bancop",
+      "monto": 119577.46360399999
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "CONSTRUCCION",
+      "banco": "Basa",
+      "monto": 319429.882866
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "CONSTRUCCION",
+      "banco": "BNA",
+      "monto": 19327.552034
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "CONSTRUCCION",
+      "banco": "BNF",
+      "monto": 158116.09064200002
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "CONSTRUCCION",
+      "banco": "Citibank",
+      "monto": 0
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "CONSTRUCCION",
+      "banco": "Continental",
+      "monto": 1701908.68960398
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "CONSTRUCCION",
+      "banco": "Do Brasil",
+      "monto": 6221.039288
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "CONSTRUCCION",
+      "banco": "Familiar",
+      "monto": 258028.400576
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "CONSTRUCCION",
+      "banco": "GNB",
+      "monto": 518625.622955
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "CONSTRUCCION",
+      "banco": "Interfisa",
+      "monto": 173423.14843200002
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "CONSTRUCCION",
+      "banco": "Itaú",
+      "monto": 819721.255188
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "CONSTRUCCION",
+      "banco": "Solar",
+      "monto": 30576.799881
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "CONSTRUCCION",
+      "banco": "Sudameris",
+      "monto": 655425.438018
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "CONSTRUCCION",
+      "banco": "UENO",
+      "monto": 133792.02988400002
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "CONSTRUCCION",
+      "banco": "Zeta",
+      "monto": 69224.076342
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "CONSTRUCCION",
+      "banco": "Sistema",
+      "monto": 5157803.004182981
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "CONSUMO",
+      "banco": "Atlas",
+      "monto": 1177069.108434
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "CONSUMO",
+      "banco": "Bancop",
+      "monto": 197404.87192099998
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "CONSUMO",
+      "banco": "Basa",
+      "monto": 1763296.837531
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "CONSUMO",
+      "banco": "BNA",
+      "monto": 94.095574
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "CONSUMO",
+      "banco": "BNF",
+      "monto": 8358080.273545
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "CONSUMO",
+      "banco": "Citibank",
+      "monto": 78196.66870628
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "CONSUMO",
+      "banco": "Continental",
+      "monto": 2218879.6707471
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "CONSUMO",
+      "banco": "Do Brasil",
+      "monto": 0
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "CONSUMO",
+      "banco": "Familiar",
+      "monto": 5020480.178517001
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "CONSUMO",
+      "banco": "GNB",
+      "monto": 1728353.42175
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "CONSUMO",
+      "banco": "Interfisa",
+      "monto": 348308.05198057
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "CONSUMO",
+      "banco": "Itaú",
+      "monto": 8131461.36380756
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "CONSUMO",
+      "banco": "Solar",
+      "monto": 1009620.980921
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "CONSUMO",
+      "banco": "Sudameris",
+      "monto": 2145016.329644
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "CONSUMO",
+      "banco": "UENO",
+      "monto": 3261959.321166
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "CONSUMO",
+      "banco": "Zeta",
+      "monto": 91176.144566
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "CONSUMO",
+      "banco": "Sistema",
+      "monto": 35529397.31881051
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "GANADERIA",
+      "banco": "Atlas",
+      "monto": 476283.894597
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "GANADERIA",
+      "banco": "Bancop",
+      "monto": 944548.9272289999
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "GANADERIA",
+      "banco": "Basa",
+      "monto": 378891.50207800005
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "GANADERIA",
+      "banco": "BNA",
+      "monto": 23328.29952
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "GANADERIA",
+      "banco": "BNF",
+      "monto": 958626.5754460001
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "GANADERIA",
+      "banco": "Citibank",
+      "monto": 0
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "GANADERIA",
+      "banco": "Continental",
+      "monto": 2139500.5663613
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "GANADERIA",
+      "banco": "Do Brasil",
+      "monto": 2517.780822
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "GANADERIA",
+      "banco": "Familiar",
+      "monto": 117848.195038
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "GANADERIA",
+      "banco": "GNB",
+      "monto": 1008535.33572
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "GANADERIA",
+      "banco": "Interfisa",
+      "monto": 262751.60201681004
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "GANADERIA",
+      "banco": "Itaú",
+      "monto": 1789705.716027
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "GANADERIA",
+      "banco": "Solar",
+      "monto": 21943.285616
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "GANADERIA",
+      "banco": "Sudameris",
+      "monto": 4160185.16738
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "GANADERIA",
+      "banco": "UENO",
+      "monto": 399581.822813
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "GANADERIA",
+      "banco": "Zeta",
+      "monto": 271336.95198221
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "GANADERIA",
+      "banco": "Sistema",
+      "monto": 12955585.62264632
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "INDUSTRIA",
+      "banco": "Atlas",
+      "monto": 836974.544455
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "INDUSTRIA",
+      "banco": "Bancop",
+      "monto": 525505.0701
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "INDUSTRIA",
+      "banco": "Basa",
+      "monto": 681477.224998
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "INDUSTRIA",
+      "banco": "BNA",
+      "monto": 63530.330078
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "INDUSTRIA",
+      "banco": "BNF",
+      "monto": 1009444.857794
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "INDUSTRIA",
+      "banco": "Citibank",
+      "monto": 27623.63659275
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "INDUSTRIA",
+      "banco": "Continental",
+      "monto": 4634966.0249842
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "INDUSTRIA",
+      "banco": "Do Brasil",
+      "monto": 52477.020432
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "INDUSTRIA",
+      "banco": "Familiar",
+      "monto": 323814.092614
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "INDUSTRIA",
+      "banco": "GNB",
+      "monto": 1828920.693158
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "INDUSTRIA",
+      "banco": "Interfisa",
+      "monto": 198100.838224
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "INDUSTRIA",
+      "banco": "Itaú",
+      "monto": 1354382.1025190002
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "INDUSTRIA",
+      "banco": "Solar",
+      "monto": 224683.975975
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "INDUSTRIA",
+      "banco": "Sudameris",
+      "monto": 4633170.680583
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "INDUSTRIA",
+      "banco": "UENO",
+      "monto": 272180.64222700003
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "INDUSTRIA",
+      "banco": "Zeta",
+      "monto": 171689.22441553
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "INDUSTRIA",
+      "banco": "Sistema",
+      "monto": 16838940.959149476
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "OTROS",
+      "banco": "Atlas",
+      "monto": 158766.093881
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "OTROS",
+      "banco": "Bancop",
+      "monto": 39346.216191
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "OTROS",
+      "banco": "Basa",
+      "monto": 132617.49094699998
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "OTROS",
+      "banco": "BNA",
+      "monto": 952.201214
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "OTROS",
+      "banco": "BNF",
+      "monto": 157883.288155
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "OTROS",
+      "banco": "Citibank",
+      "monto": 63942.22288622
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "OTROS",
+      "banco": "Continental",
+      "monto": 799876.6208802899
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "OTROS",
+      "banco": "Do Brasil",
+      "monto": 0
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "OTROS",
+      "banco": "Familiar",
+      "monto": 193889.402041
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "OTROS",
+      "banco": "GNB",
+      "monto": 206809.90477
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "OTROS",
+      "banco": "Interfisa",
+      "monto": 9631.2719
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "OTROS",
+      "banco": "Itaú",
+      "monto": 66507.972208
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "OTROS",
+      "banco": "Solar",
+      "monto": 81.262982
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "OTROS",
+      "banco": "Sudameris",
+      "monto": 101245.639335
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "OTROS",
+      "banco": "UENO",
+      "monto": 117232.499101
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "OTROS",
+      "banco": "Zeta",
+      "monto": 17855.628854
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "OTROS",
+      "banco": "Sistema",
+      "monto": 2066637.71534551
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "SECTOR FINANCIERO",
+      "banco": "Atlas",
+      "monto": 199870.26347
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "SECTOR FINANCIERO",
+      "banco": "Bancop",
+      "monto": 225498.85301099997
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "SECTOR FINANCIERO",
+      "banco": "Basa",
+      "monto": 306048.43804500997
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "SECTOR FINANCIERO",
+      "banco": "BNA",
+      "monto": 0
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "SECTOR FINANCIERO",
+      "banco": "BNF",
+      "monto": 1249525.587052
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "SECTOR FINANCIERO",
+      "banco": "Citibank",
+      "monto": 0
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "SECTOR FINANCIERO",
+      "banco": "Continental",
+      "monto": 1932173.76919448
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "SECTOR FINANCIERO",
+      "banco": "Do Brasil",
+      "monto": 64843.154396
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "SECTOR FINANCIERO",
+      "banco": "Familiar",
+      "monto": 187252.539994
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "SECTOR FINANCIERO",
+      "banco": "GNB",
+      "monto": 471305.313127
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "SECTOR FINANCIERO",
+      "banco": "Interfisa",
+      "monto": 205198.194834
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "SECTOR FINANCIERO",
+      "banco": "Itaú",
+      "monto": 599117.53895
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "SECTOR FINANCIERO",
+      "banco": "Solar",
+      "monto": 45960.522646000005
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "SECTOR FINANCIERO",
+      "banco": "Sudameris",
+      "monto": 451324.84979400004
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "SECTOR FINANCIERO",
+      "banco": "UENO",
+      "monto": 292410.09024299996
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "SECTOR FINANCIERO",
+      "banco": "Zeta",
+      "monto": 209361.893176
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "SECTOR FINANCIERO",
+      "banco": "Sistema",
+      "monto": 6439891.007932488
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "SERVICIOS",
+      "banco": "Atlas",
+      "monto": 1104584.881567
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "SERVICIOS",
+      "banco": "Bancop",
+      "monto": 465883.247813
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "SERVICIOS",
+      "banco": "Basa",
+      "monto": 739333.989784
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "SERVICIOS",
+      "banco": "BNA",
+      "monto": 59766.985962000006
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "SERVICIOS",
+      "banco": "BNF",
+      "monto": 417208.383523
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "SERVICIOS",
+      "banco": "Citibank",
+      "monto": 43094.193606739995
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "SERVICIOS",
+      "banco": "Continental",
+      "monto": 4931528.9402357405
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "SERVICIOS",
+      "banco": "Do Brasil",
+      "monto": 47136.879133
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "SERVICIOS",
+      "banco": "Familiar",
+      "monto": 433664.529193
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "SERVICIOS",
+      "banco": "GNB",
+      "monto": 1754472.0990600002
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "SERVICIOS",
+      "banco": "Interfisa",
+      "monto": 451508.40031800006
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "SERVICIOS",
+      "banco": "Itaú",
+      "monto": 2437758.4822179996
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "SERVICIOS",
+      "banco": "Solar",
+      "monto": 414176.020005
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "SERVICIOS",
+      "banco": "Sudameris",
+      "monto": 2960956.113882
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "SERVICIOS",
+      "banco": "UENO",
+      "monto": 6976921.754736001
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "SERVICIOS",
+      "banco": "Zeta",
+      "monto": 1116059.16454707
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "SERVICIOS",
+      "banco": "Sistema",
+      "monto": 24354054.06558355
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "VIVIENDA",
+      "banco": "Atlas",
+      "monto": 1403168.83528
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "VIVIENDA",
+      "banco": "Bancop",
+      "monto": 65500.847344
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "VIVIENDA",
+      "banco": "Basa",
+      "monto": 842790.9797339999
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "VIVIENDA",
+      "banco": "BNA",
+      "monto": 0
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "VIVIENDA",
+      "banco": "BNF",
+      "monto": 1703590.7242859998
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "VIVIENDA",
+      "banco": "Citibank",
+      "monto": 0
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "VIVIENDA",
+      "banco": "Continental",
+      "monto": 711445.39531623
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "VIVIENDA",
+      "banco": "Do Brasil",
+      "monto": 0
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "VIVIENDA",
+      "banco": "Familiar",
+      "monto": 156585.412482
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "VIVIENDA",
+      "banco": "GNB",
+      "monto": 457761.420832
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "VIVIENDA",
+      "banco": "Interfisa",
+      "monto": 88411.58443399999
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "VIVIENDA",
+      "banco": "Itaú",
+      "monto": 2828612.0521130003
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "VIVIENDA",
+      "banco": "Solar",
+      "monto": 86436.886154
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "VIVIENDA",
+      "banco": "Sudameris",
+      "monto": 957941.516922
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "VIVIENDA",
+      "banco": "UENO",
+      "monto": 991209.379053
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "VIVIENDA",
+      "banco": "Zeta",
+      "monto": 35251.53999
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "VIVIENDA",
+      "banco": "Sistema",
+      "monto": 10328706.57394023
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "Total cartera",
+      "banco": "Atlas",
+      "monto": 8873264.640332
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "Total cartera",
+      "banco": "Bancop",
+      "monto": 4855998.497331
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "Total cartera",
+      "banco": "Basa",
+      "monto": 8133232.74033383
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "Total cartera",
+      "banco": "BNA",
+      "monto": 345094.319801
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "Total cartera",
+      "banco": "BNF",
+      "monto": 19131965.079133995
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "Total cartera",
+      "banco": "Citibank",
+      "monto": 345744.95829393005
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "Total cartera",
+      "banco": "Continental",
+      "monto": 35094607.02463766
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "Total cartera",
+      "banco": "Do Brasil",
+      "monto": 617464.378946
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "Total cartera",
+      "banco": "Familiar",
+      "monto": 8953247.043089
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "Total cartera",
+      "banco": "GNB",
+      "monto": 18982290.325308003
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "Total cartera",
+      "banco": "Interfisa",
+      "monto": 2959729.15645211
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "Total cartera",
+      "banco": "Itaú",
+      "monto": 26917971.51737456
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "Total cartera",
+      "banco": "Solar",
+      "monto": 2559488.1877869996
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "Total cartera",
+      "banco": "Sudameris",
+      "monto": 30140955.644938
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "Total cartera",
+      "banco": "UENO",
+      "monto": 14586936.125618
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "Total cartera",
+      "banco": "Zeta",
+      "monto": 3688653.39474115
+    },
+    {
+      "periodo": "2026-05",
+      "sector": "Total cartera",
+      "banco": "Sistema",
+      "monto": 186186643.03411725
+    }
+  ]
+}
