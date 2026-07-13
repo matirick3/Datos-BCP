@@ -28,8 +28,23 @@ const MESES = {
 /* ============================== localizar el boletín vigente ============================== */
 
 async function fetchText(url){
-  const res = await fetch(url, { headers: { 'User-Agent': UA, 'Accept-Language': 'es-PY,es;q=0.9' } });
-  if (!res.ok) throw new Error('HTTP ' + res.status + ' al pedir ' + url);
+  const res = await fetch(url, {
+    headers: {
+      'User-Agent': UA,
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+      'Accept-Language': 'es-PY,es;q=0.9,en;q=0.8',
+    },
+  });
+  if (!res.ok){
+    console.error('--- Diagnóstico del error HTTP', res.status, '---');
+    console.error('Headers de respuesta:');
+    for (const [k, v] of res.headers.entries()) console.error('  ' + k + ': ' + v);
+    try{
+      const bodySnippet = (await res.text()).slice(0, 800);
+      console.error('Primeros 800 caracteres del body:\n' + bodySnippet);
+    }catch(e){ console.error('(no se pudo leer el body: ' + e.message + ')'); }
+    throw new Error('HTTP ' + res.status + ' al pedir ' + url);
+  }
   return res.text();
 }
 
@@ -189,8 +204,12 @@ async function main(){
   const latest = await findLatestBulletinUrl();
   console.log('Encontrado:', latest.nombre, '(', latest.anio + '-' + String(latest.mes).padStart(2,'0'), ') ->', latest.href);
 
-  const res = await fetch(latest.href, { headers: { 'User-Agent': UA } });
-  if (!res.ok) throw new Error('No se pudo descargar el boletín: HTTP ' + res.status);
+  const res = await fetch(latest.href, { headers: { 'User-Agent': UA, 'Accept': '*/*' } });
+  if (!res.ok){
+    console.error('--- Diagnóstico del error HTTP', res.status, 'al descargar el archivo ---');
+    for (const [k, v] of res.headers.entries()) console.error('  ' + k + ': ' + v);
+    throw new Error('No se pudo descargar el boletín: HTTP ' + res.status);
+  }
   const buf = Buffer.from(await res.arrayBuffer());
   console.log('Descargado', buf.length, 'bytes');
 
