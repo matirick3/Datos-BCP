@@ -1,97 +1,22 @@
 #!/usr/bin/env node
-// Descarga el boletín de bancos más reciente publicado por el BCP, extrae la hoja
-// "5. Cred. por sector" y actualiza data/creditos-sector.json. Pensado para correr
-// mensualmente desde un GitHub Action (.github/workflows/actualizar-boletin.yml).
+// Procesa los boletines .xlsm/.xlsx que estén en boletines/ (subidos a mano cada mes) y
+// actualiza data/creditos-sector.json. No hace ningún pedido de red: el sitio del BCP
+// bloquea descargas automatizadas (403 aun desde los runners de GitHub Actions), así que
+// el paso de "bajar el boletín" lo hace una persona en su navegador — esta Action solo
+// extrae y publica los datos una vez que el archivo ya está en el repo.
 //
-// Estrategia: la página de boletines del BCP (Liferay) enlaza a documentos con URLs
-// del tipo /documents/{grupo}/{carpeta}/{nombre}.xlsm/{uuid}?t=... donde carpeta y uuid
-// cambian cada vez que suben un archivo nuevo, así que no se puede predecir el link del
-// próximo mes: hay que leer la página cada vez y quedarse con el enlace de "Bancos" más
-// reciente según el mes/año que trae el propio nombre del archivo (ej. "May26").
-//
-// Ejemplo real de link (mayo 2026):
-// https://www.bcp.gov.py/documents/20117/2502605/1.+Bolet%C3%ADn+Bancos+May26+4.xlsm/0c1adf04-6a34-cc04-d188-8c14229c8898?t=1782317455148
+// Flujo: bajás el boletín del BCP como siempre, lo subís a la carpeta boletines/ del repo
+// (Add file → Upload files en GitHub), y el push dispara esta Action sola.
 
-import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, readdir, unlink } from 'node:fs/promises';
 import path from 'node:path';
 import * as XLSX from 'xlsx';
 
-const LISTADO_URL = 'https://www.bcp.gov.py/web/institucional/boletines-formato-macros';
+const BOLETINES_DIR = path.join(process.cwd(), 'boletines');
 const DATA_PATH = path.join(process.cwd(), 'data', 'creditos-sector.json');
-const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
-
-const MESES = {
-  ene:1, jan:1, feb:2, mar:3, abr:4, apr:4, may:5, jun:6, jul:7,
-  ago:8, aug:8, sep:9, set:9, oct:10, nov:11, dic:12, dec:12,
-};
-
-/* ============================== localizar el boletín vigente ============================== */
-
-async function fetchText(url){
-  const res = await fetch(url, {
-    headers: {
-      'User-Agent': UA,
-      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-      'Accept-Language': 'es-PY,es;q=0.9,en;q=0.8',
-    },
-  });
-  if (!res.ok){
-    console.error('--- Diagnóstico del error HTTP', res.status, '---');
-    console.error('Headers de respuesta:');
-    for (const [k, v] of res.headers.entries()) console.error('  ' + k + ': ' + v);
-    try{
-      const bodySnippet = (await res.text()).slice(0, 800);
-      console.error('Primeros 800 caracteres del body:\n' + bodySnippet);
-    }catch(e){ console.error('(no se pudo leer el body: ' + e.message + ')'); }
-    throw new Error('HTTP ' + res.status + ' al pedir ' + url);
-  }
-  return res.text();
-}
-
-function decodeHtmlEntities(s){
-  return s.replace(/&amp;/g,'&').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&lt;/g,'<').replace(/&gt;/g,'>');
-}
 
 function normalizeAscii(s){
   return String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
-}
-
-// Extrae "May" + "26" de nombres tipo "...Bancos+May26+4.xlsm" o "...Bancos_May_2026...xlsm"
-function parseMonthYearFromName(name){
-  const decoded = decodeURIComponent(name);
-  let m = decoded.match(/([A-Za-z]{3,4})[_\s.+-]?(\d{2,4})(?!\d)/);
-  if (!m) return null;
-  const mes = MESES[normalizeAscii(m[1]).slice(0,3)];
-  if (!mes) return null;
-  let anio = parseInt(m[2], 10);
-  if (anio < 100) anio += 2000;
-  return { anio, mes };
-}
-
-async function findLatestBulletinUrl(){
-  const html = await fetchText(LISTADO_URL);
-  // hrefs a documentos Liferay que terminan en .xlsm/<uuid>, con o sin querystring de cache-busting
-  const re = /href="([^"]*\/documents\/\d+\/\d+\/[^"]*?\.xlsm\/[0-9a-fA-F-]{20,36}(?:\?[^"]*)?)"/gi;
-  const candidatos = [];
-  let match;
-  while ((match = re.exec(html)) !== null){
-    const hrefRaw = decodeHtmlEntities(match[1]);
-    const href = hrefRaw.startsWith('http') ? hrefRaw : new URL(hrefRaw, LISTADO_URL).toString();
-    const nombreSegmento = decodeURIComponent(href.split('/documents/')[1].split('/').find(seg => seg.toLowerCase().endsWith('.xlsm')) || '');
-    const nombreNorm = normalizeAscii(nombreSegmento);
-    // nos interesa el boletín de "Bancos" (no Financieras, Cooperativas, Casas de Cambio, etc.)
-    if (!nombreNorm.includes('banco')) continue;
-    if (!nombreNorm.includes('bolet')) continue;
-    const my = parseMonthYearFromName(nombreSegmento);
-    candidatos.push({ href, nombre: nombreSegmento, anio: my?.anio ?? 0, mes: my?.mes ?? 0 });
-  }
-  if (candidatos.length === 0){
-    console.error('No se encontró ningún enlace de boletín de Bancos en la página. Volcado parcial del HTML para depurar:');
-    console.error(html.slice(0, 4000));
-    throw new Error('No se pudo ubicar el boletín de Bancos en ' + LISTADO_URL);
-  }
-  candidatos.sort((a,b)=> (b.anio*12+b.mes) - (a.anio*12+a.mes));
-  return candidatos[0];
 }
 
 /* ============================== parser de "5. Cred. por sector" ============================== */
@@ -200,26 +125,18 @@ function findBulletinSheetName(sheetNames){
 /* ============================== main ============================== */
 
 async function main(){
-  console.log('Buscando el boletín de Bancos más reciente en', LISTADO_URL);
-  const latest = await findLatestBulletinUrl();
-  console.log('Encontrado:', latest.nombre, '(', latest.anio + '-' + String(latest.mes).padStart(2,'0'), ') ->', latest.href);
-
-  const res = await fetch(latest.href, { headers: { 'User-Agent': UA, 'Accept': '*/*' } });
-  if (!res.ok){
-    console.error('--- Diagnóstico del error HTTP', res.status, 'al descargar el archivo ---');
-    for (const [k, v] of res.headers.entries()) console.error('  ' + k + ': ' + v);
-    throw new Error('No se pudo descargar el boletín: HTTP ' + res.status);
+  let files;
+  try{
+    files = await readdir(BOLETINES_DIR);
+  }catch(err){
+    console.log('No existe la carpeta boletines/ todavía (o está vacía). Nada que procesar.');
+    return;
   }
-  const buf = Buffer.from(await res.arrayBuffer());
-  console.log('Descargado', buf.length, 'bytes');
-
-  const wb = XLSX.read(buf, { type: 'buffer', cellDates: false });
-  const sheetName = findBulletinSheetName(wb.SheetNames);
-  if (!sheetName) throw new Error('No se encontró la hoja "5. Cred. por sector" en el archivo descargado. Hojas disponibles: ' + wb.SheetNames.join(', '));
-  const rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { header:1, raw:true, defval:null });
-  const result = parseBcpBulletinSheet(rows);
-  if (result.error) throw new Error('Error al parsear la hoja "' + sheetName + '": ' + result.error);
-  console.log('Extraídas', result.records.length, 'filas de "' + sheetName + '"');
+  const bulletinFiles = files.filter(f => /\.(xlsm|xlsx)$/i.test(f));
+  if (bulletinFiles.length === 0){
+    console.log('No hay archivos .xlsm/.xlsx en boletines/. Nada que procesar.');
+    return;
+  }
 
   let existing = { records: [] };
   try{
@@ -229,20 +146,46 @@ async function main(){
 
   const merged = new Map();
   existing.records.forEach(r=> merged.set(r.periodo+'|'+r.sector+'|'+r.banco, r));
-  result.records.forEach(r=> merged.set(r.periodo+'|'+r.sector+'|'+r.banco, r));
+
+  let procesados = 0;
+  for (const file of bulletinFiles){
+    const filePath = path.join(BOLETINES_DIR, file);
+    console.log('Procesando', file, '...');
+    try{
+      const buf = await readFile(filePath);
+      const wb = XLSX.read(buf, { type: 'buffer', cellDates: false });
+      const sheetName = findBulletinSheetName(wb.SheetNames);
+      if (!sheetName){ console.error('  Se salteó (no se encontró la hoja "5. Cred. por sector"):', file); continue; }
+      const rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { header:1, raw:true, defval:null });
+      const result = parseBcpBulletinSheet(rows);
+      if (result.error){ console.error('  Se salteó', file, '-', result.error); continue; }
+      result.records.forEach(r=> merged.set(r.periodo+'|'+r.sector+'|'+r.banco, r));
+      console.log('  OK:', result.records.length, 'filas de', [...new Set(result.records.map(r=>r.periodo))].join(', '));
+      procesados++;
+      // ya está extraído en data/creditos-sector.json; borramos el .xlsm original del repo
+      // para no ir acumulando archivos de ~15 MB cada mes.
+      await unlink(filePath);
+    }catch(err){
+      console.error('  Se salteó', file, '- error inesperado:', err.message);
+    }
+  }
+
+  if (procesados === 0){
+    console.log('Ningún archivo se pudo procesar. No se modifica data/creditos-sector.json.');
+    return;
+  }
 
   const salida = {
     actualizado: new Date().toISOString(),
-    fuente: latest.href,
     records: Array.from(merged.values()),
   };
 
   await mkdir(path.dirname(DATA_PATH), { recursive: true });
   await writeFile(DATA_PATH, JSON.stringify(salida, null, 2) + '\n', 'utf-8');
-  console.log('Guardado', DATA_PATH, 'con', salida.records.length, 'filas totales.');
+  console.log('Guardado', DATA_PATH, 'con', salida.records.length, 'filas totales (', procesados, 'boletines procesados en esta corrida).');
 }
 
 main().catch(err=>{
-  console.error('FALLÓ la actualización del boletín:', err.message);
+  console.error('FALLÓ el procesamiento de boletines:', err.message);
   process.exit(1);
 });
