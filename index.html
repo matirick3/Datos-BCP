@@ -133,6 +133,7 @@
       <label for="file-input" class="btn btn-primary">Cargar boletín BCP o plantilla</label>
       <button class="btn btn-ghost" id="btn-demo">Ver con datos de ejemplo</button>
       <button class="btn btn-ghost hidden" id="btn-export">Exportar resumen (Excel)</button>
+      <button class="btn btn-ghost hidden" id="btn-export-json">Descargar datos actualizados (JSON)</button>
       <button class="btn btn-ghost hidden" id="btn-reset">Quitar todo</button>
     </div>
   </div>
@@ -672,6 +673,7 @@ function goToApp(){
   document.getElementById('periods-bar').classList.remove('hidden');
   document.getElementById('btn-reset').classList.remove('hidden');
   document.getElementById('btn-export').classList.remove('hidden');
+  document.getElementById('btn-export-json').classList.remove('hidden');
 }
 
 document.getElementById('btn-reset').addEventListener('click', ()=>{
@@ -680,6 +682,7 @@ document.getElementById('btn-reset').addEventListener('click', ()=>{
   document.getElementById('periods-bar').classList.add('hidden');
   document.getElementById('btn-reset').classList.add('hidden');
   document.getElementById('btn-export').classList.add('hidden');
+  document.getElementById('btn-export-json').classList.add('hidden');
   document.getElementById('demo-banner').classList.add('hidden');
   document.getElementById('auto-banner').classList.add('hidden');
   document.getElementById('status-area').innerHTML = '';
@@ -1105,6 +1108,28 @@ function exportSummary(){
   XLSX.writeFile(wb, 'resumen-creditos-'+fmtPeriod(periodo).replace(' ','')+'.xlsx');
 }
 document.getElementById('btn-export').addEventListener('click', exportSummary);
+
+/* ============================== descargar data/creditos-sector.json ============================== */
+/* Alternativa al boletín .xlsm pesado: el navegador ya hizo el trabajo de extraer los datos
+   (al cargar el archivo más arriba), así que esto arma el mismo JSON liviano que produce la
+   Action de GitHub y lo descarga — se puede subir directo a data/creditos-sector.json sin
+   pasar el .xlsm de ~15 MB por la web de GitHub. */
+function exportDataJson(){
+  const payload = {
+    actualizado: new Date().toISOString(),
+    records: state.records,
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2) + '\n'], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'creditos-sector.json';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+document.getElementById('btn-export-json').addEventListener('click', exportDataJson);
 
 /* ============================== autocarga (data/creditos-sector.json) ============================== */
 /* Si esta página está publicada (ej. GitHub Pages) y existe data/creditos-sector.json —
