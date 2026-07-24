@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.0/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/2.0.1/chartjs-plugin-zoom.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root{
@@ -90,13 +91,22 @@
   .chip-group{display:flex; gap:6px; flex-wrap:wrap; max-width:640px;}
   .chip{font-size:.76rem; font-family:'IBM Plex Mono',monospace; padding:5px 10px; border-radius:20px; border:1px solid var(--border); background:transparent; color:var(--text-faint); cursor:pointer;}
   .note{font-size:.82rem; color:var(--text-faint); margin-top:10px;}
-  .chart-wrap{position:relative; height:360px;}
+  .chart-wrap{position:relative; height:400px;}
   .chart-wrap.short{height:320px;}
   .chart-expand{position:absolute; top:8px; right:8px; z-index:5; background:var(--surface-2); border:1px solid var(--border); color:var(--text-dim); border-radius:6px; padding:5px 9px; font-size:.74rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:5px; transition:background .15s,color .15s;}
   .chart-expand:hover{background:var(--surface-3); color:var(--text); border-color:var(--text-faint);}
   .chart-wrap:fullscreen{height:100vh !important; width:100vw; background:var(--ink); padding:52px 32px 32px; box-sizing:border-box;}
   .chart-wrap:-webkit-full-screen{height:100vh !important; width:100vw; background:var(--ink); padding:52px 32px 32px; box-sizing:border-box;}
   .chart-wrap:fullscreen .chart-expand{top:14px; right:18px;}
+
+  .chart-area{display:flex; gap:10px; align-items:stretch;}
+  .chart-toolbar{display:flex; flex-direction:column; gap:3px; padding:5px; border:1px solid var(--border); border-radius:10px; background:var(--surface-2); align-self:stretch; max-height:400px; overflow-y:auto;}
+  .chart-toolbar .tool-sep{height:1px; background:var(--border); margin:3px 2px; flex:none;}
+  .tool-btn{width:34px; height:32px; flex:none; display:flex; align-items:center; justify-content:center; background:transparent; border:1px solid transparent; border-radius:7px; color:var(--text-dim); cursor:pointer; font-size:.82rem; font-weight:600; line-height:1; transition:background .12s,color .12s,border-color .12s;}
+  .tool-btn:hover{background:var(--surface-3); color:var(--text);}
+  .tool-btn.active{background:var(--gold); color:#1a1206; border-color:var(--gold);}
+  .chart-area .chart-wrap{flex:1; min-width:0;}
+  .chart-wrap:fullscreen .chart-toolbar{display:none;}
 
   table{width:100%; border-collapse:collapse; font-size:.85rem;}
   table th, table td{padding:10px 14px; border-bottom:1px solid var(--border); text-align:left;}
@@ -197,7 +207,10 @@
             <div class="chip-group" id="t1-bancos"></div>
           </div>
         </div>
-        <div class="chart-wrap"><canvas id="chart-evolucion"></canvas></div>
+        <div class="chart-area">
+          <div class="chart-toolbar" id="tools-evolucion"></div>
+          <div class="chart-wrap"><canvas id="chart-evolucion"></canvas></div>
+        </div>
         <div class="note" id="t1-note"></div>
       </div>
     </div>
@@ -216,7 +229,10 @@
             <div class="chip-group" id="t2-bancos"></div>
           </div>
         </div>
-        <div class="chart-wrap"><canvas id="chart-comparar"></canvas></div>
+        <div class="chart-area">
+          <div class="chart-toolbar" id="tools-comparar"></div>
+          <div class="chart-wrap"><canvas id="chart-comparar"></canvas></div>
+        </div>
         <div class="note" id="t2-note"></div>
       </div>
     </div>
@@ -516,6 +532,13 @@ const ui = {
   t4: { banco:null, periodo:null },
   t5: { banco:null, periodo:null },
   rango: { desde:null, hasta:null },
+};
+
+// Estado de las herramientas de análisis por gráfico temporal (persiste entre re-dibujados,
+// para no perder tendencia/promedio/dibujos al cambiar bancos o rango).
+const chartTools = {
+  evolucion: { trend:false, avg:false, labels:false, base100:false, log:false, sma:0, maxmin:false, activeTool:null, drawings:[], _measure:null },
+  comparar:  { trend:false, avg:false, labels:false, base100:false, log:false, sma:0, maxmin:false, activeTool:null, drawings:[], _measure:null },
 };
 
 function getFilteredPeriods(){
@@ -824,6 +847,8 @@ function setupChartDefaults(){
   Chart.defaults.color = '#8fa1b8';
   Chart.defaults.font.family = "'Inter', sans-serif";
   Chart.defaults.borderColor = 'rgba(255,255,255,0.06)';
+  ensureZoomPlugin();
+  registerBCPChartPlugins();
   return true;
 }
 
@@ -869,6 +894,311 @@ function onFullscreenChange(){
 document.addEventListener('fullscreenchange', onFullscreenChange);
 document.addEventListener('webkitfullscreenchange', onFullscreenChange);
 
+/* ============================== herramientas de análisis de gráficos ============================== */
+
+let zoomPluginReady = false;
+function ensureZoomPlugin(){
+  if (zoomPluginReady) return;
+  if (typeof Chart !== 'undefined' && window.ChartZoom){ Chart.register(window.ChartZoom); zoomPluginReady = true; }
+}
+
+// Regresión lineal simple sobre puntos {x,y} → función y(x).
+function linearRegression(points){
+  const n = points.length;
+  if (n < 2) return null;
+  let sx=0, sy=0, sxy=0, sxx=0;
+  points.forEach(p=>{ sx+=p.x; sy+=p.y; sxy+=p.x*p.y; sxx+=p.x*p.x; });
+  const denom = n*sxx - sx*sx;
+  if (denom === 0) return null;
+  const b = (n*sxy - sx*sy)/denom;
+  const a = (sy - b*sx)/n;
+  return x => a + b*x;
+}
+
+// Plugin: muestra el valor numérico sobre cada punto cuando chart.$showLabels es true.
+const dataLabelsPlugin = {
+  id: 'dataLabelsBCP',
+  afterDatasetsDraw(chart){
+    if (!chart.$showLabels) return;
+    const ctx = chart.ctx;
+    ctx.save();
+    ctx.font = '600 10px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    chart.data.datasets.forEach((ds, di)=>{
+      if (ds._helper) return; // no etiquetar tendencia/promedio
+      const meta = chart.getDatasetMeta(di);
+      if (meta.hidden) return;
+      meta.data.forEach((pt, i)=>{
+        const v = ds.data[i];
+        if (v===null || v===undefined || isNaN(v)) return;
+        ctx.fillStyle = '#edeff2';
+        ctx.fillText(fmtGs(v), pt.x, pt.y - 5);
+      });
+    });
+    ctx.restore();
+  }
+};
+
+// Plugin: dibuja las líneas/líneas horizontales trazadas por el usuario, ancladas a coordenadas
+// de datos (índice de período en X, monto en Y) para que se muevan con el zoom/paneo.
+const drawingsPlugin = {
+  id: 'drawingsBCP',
+  afterDraw(chart){
+    const st = chart.$tools; if (!st) return;
+    const {left,right,top,bottom} = chart.chartArea;
+    const xs = chart.scales.x, ys = chart.scales.y;
+    const ctx = chart.ctx;
+    ctx.save();
+    ctx.beginPath(); ctx.rect(left, top, right-left, bottom-top); ctx.clip();
+    const fmtY = chart.$base100 ? (v=>v.toFixed(1)) : fmtGs;
+    const drawOne = (d, temp)=>{
+      ctx.lineWidth = 2; ctx.strokeStyle = temp ? 'rgba(217,164,65,.6)' : '#d9a441'; ctx.setLineDash(temp?[5,4]:[]);
+      if (d.type==='hline'){
+        const y = ys.getPixelForValue(d.y);
+        ctx.beginPath(); ctx.moveTo(left,y); ctx.lineTo(right,y); ctx.stroke();
+        ctx.setLineDash([]); ctx.fillStyle = ctx.strokeStyle; ctx.font='600 10px IBM Plex Mono, monospace'; ctx.textAlign='left'; ctx.textBaseline='bottom';
+        ctx.fillText(fmtY(d.y), left+4, y-3);
+      } else if (d.type==='vline'){
+        const x = xs.getPixelForValue(d.x);
+        ctx.beginPath(); ctx.moveTo(x,top); ctx.lineTo(x,bottom); ctx.stroke();
+        ctx.setLineDash([]); ctx.fillStyle = ctx.strokeStyle; ctx.font='600 10px IBM Plex Mono, monospace'; ctx.textAlign='center'; ctx.textBaseline='top';
+        const lbl = chart.data.labels[Math.round(d.x)] || '';
+        ctx.fillText(lbl, x, top+3);
+      } else {
+        ctx.beginPath(); ctx.moveTo(xs.getPixelForValue(d.x1), ys.getPixelForValue(d.y1)); ctx.lineTo(xs.getPixelForValue(d.x2), ys.getPixelForValue(d.y2)); ctx.stroke();
+      }
+      ctx.setLineDash([]);
+    };
+    (st.drawings||[]).forEach(d=>drawOne(d,false));
+    if (st._temp) drawOne(st._temp, true);
+    // herramienta de medición: línea punteada + etiqueta con Δ% y Δmeses
+    if (st._measure){
+      const m = st._measure;
+      const x1=xs.getPixelForValue(m.x1), y1=ys.getPixelForValue(m.y1), x2=xs.getPixelForValue(m.x2), y2=ys.getPixelForValue(m.y2);
+      const up = m.y2>=m.y1;
+      ctx.setLineDash([4,3]); ctx.lineWidth=1.5; ctx.strokeStyle = up ? '#5fae82' : '#c1614b';
+      ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke(); ctx.setLineDash([]);
+      const pct = (m.y1!==0) ? (m.y2-m.y1)/Math.abs(m.y1)*100 : NaN;
+      const meses = Math.round(m.x2-m.x1);
+      const txt = (isNaN(pct)?'s/d':(pct>=0?'+':'')+pct.toFixed(1).replace('.',',')+'%') + '  ·  ' + Math.abs(meses) + ' mes' + (Math.abs(meses)===1?'':'es');
+      ctx.font='700 11px Inter, sans-serif'; ctx.textAlign='left'; ctx.textBaseline='middle';
+      const tw = ctx.measureText(txt).width;
+      ctx.fillStyle = 'rgba(14,27,43,.85)'; ctx.fillRect(x2+8, y2-11, tw+12, 22);
+      ctx.strokeStyle = up ? '#5fae82' : '#c1614b'; ctx.lineWidth=1; ctx.strokeRect(x2+8, y2-11, tw+12, 22);
+      ctx.fillStyle = up ? '#5fae82' : '#c1614b'; ctx.fillText(txt, x2+14, y2+1);
+    }
+    ctx.restore();
+  }
+};
+
+function registerBCPChartPlugins(){
+  if (typeof Chart === 'undefined') return;
+  if (!Chart.registry.plugins.get('dataLabelsBCP')) Chart.register(dataLabelsPlugin);
+  if (!Chart.registry.plugins.get('drawingsBCP')) Chart.register(drawingsPlugin);
+  if (!Chart.registry.plugins.get('maxMinBCP')) Chart.register(maxMinPlugin);
+}
+
+// Config de zoom/paneo para un gráfico temporal. El paneo por arrastre se desactiva cuando hay
+// una herramienta de dibujo activa (para que el arrastre dibuje en vez de mover el gráfico).
+function zoomOptions(key){
+  const st = chartTools[key];
+  return {
+    zoom: { wheel:{ enabled:true }, pinch:{ enabled:true }, mode:'x' },
+    pan:  { enabled: !st.activeTool, mode:'x' },
+  };
+}
+
+// Convierte la posición del mouse a coordenadas de datos (x = índice de período, y = monto).
+function eventToData(chart, evt){
+  const rect = chart.canvas.getBoundingClientRect();
+  const px = evt.clientX - rect.left, py = evt.clientY - rect.top;
+  const area = chart.chartArea;
+  const cx = Math.min(Math.max(px, area.left), area.right);
+  const cy = Math.min(Math.max(py, area.top), area.bottom);
+  return { x: chart.scales.x.getValueForPixel(cx), y: chart.scales.y.getValueForPixel(cy) };
+}
+
+// Conecta el trazado de dibujos con el mouse sobre el lienzo del gráfico. Se conecta UNA sola
+// vez por canvas (el canvas persiste entre re-dibujados); los handlers buscan siempre el gráfico
+// vigente vía state.charts[key], nunca una instancia vieja ya destruida.
+function attachDrawingHandlers(chart, key){
+  const canvas = chart.canvas;
+  if (canvas.dataset.drawWired) return;
+  canvas.dataset.drawWired = '1';
+  const st = chartTools[key];
+  let start = null;
+  canvas.addEventListener('mousedown', (e)=>{
+    const c = state.charts[key]; if (!c || !st.activeTool) return;
+    const d = eventToData(c, e);
+    if (st.activeTool==='hline'){
+      st.drawings.push({ type:'hline', y:d.y }); c.update('none');
+    } else if (st.activeTool==='vline'){
+      st.drawings.push({ type:'vline', x:Math.round(d.x) }); c.update('none');
+    } else if (st.activeTool==='line' || st.activeTool==='measure'){
+      start = d;
+      if (st.activeTool==='line') st._temp = { type:'line', x1:d.x, y1:d.y, x2:d.x, y2:d.y };
+      else st._measure = { x1:d.x, y1:d.y, x2:d.x, y2:d.y };
+    }
+    e.preventDefault();
+  });
+  canvas.addEventListener('mousemove', (e)=>{
+    const c = state.charts[key]; if (!c || !start) return;
+    const d = eventToData(c, e);
+    if (st.activeTool==='line'){ st._temp = { type:'line', x1:start.x, y1:start.y, x2:d.x, y2:d.y }; c.update('none'); }
+    else if (st.activeTool==='measure'){ st._measure = { x1:start.x, y1:start.y, x2:d.x, y2:d.y }; c.update('none'); }
+  });
+  window.addEventListener('mouseup', (e)=>{
+    const c = state.charts[key]; if (!c) { start=null; st._temp=null; return; }
+    if (!start) return;
+    const d = eventToData(c, e);
+    if (st.activeTool==='line'){
+      st.drawings.push({ type:'line', x1:start.x, y1:start.y, x2:d.x, y2:d.y });
+      st._temp = null;
+    } else if (st.activeTool==='measure'){
+      st._measure = { x1:start.x, y1:start.y, x2:d.x, y2:d.y }; // queda visible hasta la próxima medición o borrar
+    }
+    start = null;
+    c.update('none');
+  });
+}
+
+// Rebase a base 100: cada serie arranca en 100 en su primer valor no nulo, para comparar el
+// ritmo de crecimiento sin que el tamaño absoluto domine. Devuelve copias de los datasets.
+function rebaseDatasets(datasets){
+  return datasets.map(ds=>{
+    const base = ds.data.find(v=>v!==null && v!==undefined && !isNaN(v) && v!==0);
+    const data = ds.data.map(v=> (v===null||v===undefined||isNaN(v)||!base) ? null : v/base*100);
+    return { ...ds, data };
+  });
+}
+
+// Media móvil simple de ventana n sobre una serie (con huecos = null).
+function computeSMA(data, n){
+  return data.map((_, i)=>{
+    if (i < n-1) return null;
+    let sum=0, cnt=0;
+    for (let k=i-n+1; k<=i; k++){ const v=data[k]; if (v!==null && v!==undefined && !isNaN(v)){ sum+=v; cnt++; } }
+    return cnt===n ? sum/cnt : null;
+  });
+}
+
+// Devuelve los datasets extra (tendencia / promedio / media móvil) según el estado del gráfico.
+// baseDatasets ya viene con la transformación de base 100 aplicada si corresponde.
+function overlayDatasets(key, periods, baseDatasets){
+  const st = chartTools[key];
+  const extra = [];
+  const pts = [];
+  baseDatasets.forEach(ds=> ds.data.forEach((v,i)=>{ if (v!==null && v!==undefined && !isNaN(v)) pts.push({x:i, y:v}); }));
+  if (st.sma){
+    baseDatasets.forEach(ds=>{
+      extra.push({ label:'MM'+st.sma+' '+ds.label, data: computeSMA(ds.data, st.sma), borderColor:ds.borderColor, borderDash:[2,3], borderWidth:1.5, pointRadius:0, fill:false, spanGaps:true, _helper:true });
+    });
+  }
+  if (pts.length){
+    if (st.avg){
+      const mean = pts.reduce((a,p)=>a+p.y,0)/pts.length;
+      extra.push({ label:'Promedio', data: periods.map(()=>mean), borderColor:'#6e8fb5', borderDash:[8,4], borderWidth:1.5, pointRadius:0, fill:false, _helper:true });
+    }
+    if (st.trend){
+      const fn = linearRegression(pts);
+      if (fn) extra.push({ label:'Tendencia', data: periods.map((_,i)=>fn(i)), borderColor:'#c1614b', borderDash:[6,4], borderWidth:1.5, pointRadius:0, fill:false, _helper:true });
+    }
+  }
+  return extra;
+}
+
+// Plugin: resalta el punto máximo y mínimo de cada serie cuando chart.$showMaxMin es true.
+const maxMinPlugin = {
+  id: 'maxMinBCP',
+  afterDatasetsDraw(chart){
+    if (!chart.$showMaxMin) return;
+    const ctx = chart.ctx;
+    ctx.save();
+    ctx.font = '700 10px IBM Plex Mono, monospace';
+    ctx.textAlign = 'center';
+    const fmt = chart.$base100 ? (v=>v.toFixed(1)) : fmtGs;
+    chart.data.datasets.forEach((ds, di)=>{
+      if (ds._helper) return;
+      const meta = chart.getDatasetMeta(di);
+      if (meta.hidden) return;
+      let maxI=-1, minI=-1, maxV=-Infinity, minV=Infinity;
+      ds.data.forEach((v,i)=>{ if (v===null||v===undefined||isNaN(v)) return; if (v>maxV){maxV=v;maxI=i;} if (v<minV){minV=v;minI=i;} });
+      [[maxI,maxV,'▲',-8,'bottom'],[minI,minV,'▼',8,'top']].forEach(([i,v,mark,dy,base])=>{
+        if (i<0) return; const pt = meta.data[i]; if (!pt) return;
+        ctx.fillStyle = ds.borderColor;
+        ctx.textBaseline = base;
+        ctx.fillText(mark+' '+fmt(v), pt.x, pt.y+dy);
+      });
+    });
+    ctx.restore();
+  }
+};
+
+// Construye (una sola vez) la barra de herramientas lateral de un gráfico temporal.
+function buildChartToolbar(key, containerId, rerender){
+  const cont = document.getElementById(containerId);
+  if (!cont || cont.dataset.built) return;
+  cont.dataset.built = '1';
+  const st = chartTools[key];
+  const tools = [
+    { grupo:'zoom', items:[
+      { id:'zin', title:'Acercar', html:'🔍+', onClick:()=>{ const c=state.charts[key]; if(c&&c.zoom) c.zoom(1.2); } },
+      { id:'zout', title:'Alejar', html:'🔍–', onClick:()=>{ const c=state.charts[key]; if(c&&c.zoom) c.zoom(0.8); } },
+      { id:'zreset', title:'Restablecer zoom', html:'⟳', onClick:()=>{ const c=state.charts[key]; if(c&&c.resetZoom) c.resetZoom(); } },
+    ]},
+    { grupo:'escala', items:[
+      { id:'base100', title:'Rebase a base 100 (comparar crecimiento)', html:'100', toggle:'base100' },
+      { id:'log', title:'Escala logarítmica', html:'㏒', toggle:'log' },
+    ]},
+    { grupo:'over', items:[
+      { id:'trend', title:'Línea de tendencia', html:'📈', toggle:'trend' },
+      { id:'sma', title:'Media móvil (clic: 3 → 6 → off meses)', html:'MM', onClick:()=>{ st.sma = st.sma===0?3:(st.sma===3?6:0); rerender(); } },
+      { id:'avg', title:'Línea de promedio', html:'⎯', toggle:'avg' },
+      { id:'maxmin', title:'Marcar máximos y mínimos', html:'⇕', toggle:'maxmin' },
+      { id:'labels', title:'Mostrar valores', html:'#', toggle:'labels' },
+    ]},
+    { grupo:'draw', items:[
+      { id:'measure', title:'Medir variación entre dos meses', html:'📏', tool:'measure' },
+      { id:'line', title:'Dibujar línea', html:'╱', tool:'line' },
+      { id:'hline', title:'Línea horizontal de referencia', html:'―', tool:'hline' },
+      { id:'vline', title:'Línea vertical (marcar un mes)', html:'│', tool:'vline' },
+      { id:'clear', title:'Borrar dibujos y mediciones', html:'🗑', onClick:()=>{ st.drawings.length=0; st._temp=null; st._measure=null; const c=state.charts[key]; if(c) c.update('none'); } },
+    ]},
+  ];
+  tools.forEach((g,gi)=>{
+    if (gi>0){ const sep=document.createElement('div'); sep.className='tool-sep'; cont.appendChild(sep); }
+    g.items.forEach(it=>{
+      const b = document.createElement('button');
+      b.type='button'; b.className='tool-btn'; b.title=it.title; b.innerHTML=it.html; b.dataset.tid=it.id;
+      b.addEventListener('click', ()=>{
+        if (it.toggle){ st[it.toggle] = !st[it.toggle]; rerender(); }
+        else if (it.tool){ st.activeTool = (st.activeTool===it.tool) ? null : it.tool; rerender(); }
+        else if (it.onClick){ it.onClick(); }
+        syncToolbar(key, containerId);
+      });
+      cont.appendChild(b);
+    });
+  });
+  syncToolbar(key, containerId);
+}
+
+// Refleja el estado activo (resaltado) de los botones de la barra.
+function syncToolbar(key, containerId){
+  const cont = document.getElementById(containerId); if (!cont) return;
+  const st = chartTools[key];
+  cont.querySelectorAll('.tool-btn').forEach(b=>{
+    const id = b.dataset.tid;
+    const on = (id==='trend'&&st.trend) || (id==='avg'&&st.avg) || (id==='labels'&&st.labels)
+      || (id==='base100'&&st.base100) || (id==='log'&&st.log) || (id==='maxmin'&&st.maxmin)
+      || (id==='sma'&&st.sma>0) || (id===st.activeTool);
+    b.classList.toggle('active', !!on);
+    if (id==='sma') b.innerHTML = st.sma ? 'MM'+st.sma : 'MM';
+  });
+  const c = state.charts[key];
+  if (c){ c.canvas.style.cursor = st.activeTool ? 'crosshair' : 'default'; }
+}
+
 /* ---- Tab 1: evolución por banco ---- */
 function renderTab1(){
   const canvas = document.getElementById('chart-evolucion');
@@ -881,7 +1211,8 @@ function renderTab1(){
     return;
   }
   const vista = ui.t1.vista;
-  const datasets = bancos.map(b=>{
+  const st1 = chartTools.evolucion;
+  let datasets = bancos.map(b=>{
     const c = bankColor(b);
     return {
       label: b, data: periods.map(p=>getVal(p, vista, b)),
@@ -889,16 +1220,32 @@ function renderTab1(){
       pointRadius: periods.length===1?5:2, spanGaps:true,
     };
   });
+  if (st1.base100) datasets = rebaseDatasets(datasets);
+  const allDatasets = [...datasets, ...overlayDatasets('evolucion', periods, datasets)];
+  const yFmt1 = st1.base100 ? (v=>Number(v).toFixed(0)) : (v=>fmtGs(v));
+  const tipFmt1 = st1.base100 ? (v=> (v==null?'—':Number(v).toFixed(1).replace('.',',')+' (base 100)')) : (v=>fmtGsFull(v));
   state.charts.evolucion = new Chart(canvas, {
     type:'line',
-    data:{ labels: periods.map(fmtPeriod), datasets },
+    data:{ labels: periods.map(fmtPeriod), datasets: allDatasets },
     options:{
       responsive:true, maintainAspectRatio:false,
       interaction:{ mode:'index', intersect:false },
-      plugins:{ legend:{ position:'bottom', labels:{boxWidth:10,font:{size:11}} }, tooltip:{ itemSort: tooltipSortDesc, callbacks:{ label:(c)=>c.dataset.label+': '+fmtGsFull(c.raw) } } },
-      scales:{ y:{ ticks:{ callback:(v)=>fmtGs(v) } }, x:{ ticks:{ autoSkip:true, maxTicksLimit:16, maxRotation:55, minRotation:0 } } },
+      plugins:{
+        legend:{ position:'bottom', labels:{boxWidth:10,font:{size:11}} },
+        tooltip:{ itemSort: tooltipSortDesc, callbacks:{ label:(c)=>c.dataset.label+': '+tipFmt1(c.raw) } },
+        zoom: zoomOptions('evolucion'),
+      },
+      scales:{ y:{ type: st1.log?'logarithmic':'linear', ticks:{ callback:yFmt1 } }, x:{ ticks:{ autoSkip:true, maxTicksLimit:16, maxRotation:55, minRotation:0 } } },
     }
   });
+  state.charts.evolucion.$tools = chartTools.evolucion;
+  state.charts.evolucion.$showLabels = chartTools.evolucion.labels;
+  state.charts.evolucion.$showMaxMin = chartTools.evolucion.maxmin;
+  state.charts.evolucion.$base100 = chartTools.evolucion.base100;
+  buildChartToolbar('evolucion', 'tools-evolucion', renderTab1);
+  attachDrawingHandlers(state.charts.evolucion, 'evolucion');
+  syncToolbar('evolucion', 'tools-evolucion');
+  state.charts.evolucion.update('none');
   note.textContent = periods.length<2 ? `Mostrando ${periods.length} período. Sumá más boletines mensuales (o ampliá el rango) para ver una tendencia real.` : '';
 }
 
@@ -913,7 +1260,8 @@ function renderTab2(){
     note.textContent = (sectores.length===0||bancos.length===0) ? 'Elegí al menos un sector y un banco.' : (periods.length===0 ? 'No hay períodos en el rango elegido.' : '');
     return;
   }
-  const datasets = [];
+  const st2 = chartTools.comparar;
+  let datasets = [];
   sectores.forEach(sec=>{
     bancos.forEach(b=>{
       const c = bankColor(b);
@@ -925,16 +1273,32 @@ function renderTab2(){
       });
     });
   });
+  if (st2.base100) datasets = rebaseDatasets(datasets);
+  const allDatasets = [...datasets, ...overlayDatasets('comparar', periods, datasets)];
+  const yFmt2 = st2.base100 ? (v=>Number(v).toFixed(0)) : (v=>fmtGs(v));
+  const tipFmt2 = st2.base100 ? (v=> (v==null?'—':Number(v).toFixed(1).replace('.',',')+' (base 100)')) : (v=>fmtGsFull(v));
   state.charts.comparar = new Chart(canvas, {
     type:'line',
-    data:{ labels: periods.map(fmtPeriod), datasets },
+    data:{ labels: periods.map(fmtPeriod), datasets: allDatasets },
     options:{
       responsive:true, maintainAspectRatio:false,
       interaction:{ mode:'index', intersect:false },
-      plugins:{ legend:{ position:'bottom', labels:{boxWidth:10,font:{size:10}} }, tooltip:{ itemSort: tooltipSortDesc, callbacks:{ label:(c)=>c.dataset.label+': '+fmtGsFull(c.raw) } } },
-      scales:{ y:{ ticks:{ callback:(v)=>fmtGs(v) } }, x:{ ticks:{ autoSkip:true, maxTicksLimit:16, maxRotation:55, minRotation:0 } } },
+      plugins:{
+        legend:{ position:'bottom', labels:{boxWidth:10,font:{size:10}} },
+        tooltip:{ itemSort: tooltipSortDesc, callbacks:{ label:(c)=>c.dataset.label+': '+tipFmt2(c.raw) } },
+        zoom: zoomOptions('comparar'),
+      },
+      scales:{ y:{ type: st2.log?'logarithmic':'linear', ticks:{ callback:yFmt2 } }, x:{ ticks:{ autoSkip:true, maxTicksLimit:16, maxRotation:55, minRotation:0 } } },
     }
   });
+  state.charts.comparar.$tools = chartTools.comparar;
+  state.charts.comparar.$showLabels = chartTools.comparar.labels;
+  state.charts.comparar.$showMaxMin = chartTools.comparar.maxmin;
+  state.charts.comparar.$base100 = chartTools.comparar.base100;
+  buildChartToolbar('comparar', 'tools-comparar', renderTab2);
+  attachDrawingHandlers(state.charts.comparar, 'comparar');
+  syncToolbar('comparar', 'tools-comparar');
+  state.charts.comparar.update('none');
   note.textContent = datasets.length>12 ? 'Muchas combinaciones a la vez pueden saturar el gráfico — probá acotar sectores o bancos.' : (periods.length<2 ? `Mostrando ${periods.length} período. Sumá más meses (o ampliá el rango) para ver tendencia.` : '');
 }
 
