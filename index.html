@@ -92,6 +92,11 @@
   .note{font-size:.82rem; color:var(--text-faint); margin-top:10px;}
   .chart-wrap{position:relative; height:360px;}
   .chart-wrap.short{height:320px;}
+  .chart-expand{position:absolute; top:8px; right:8px; z-index:5; background:var(--surface-2); border:1px solid var(--border); color:var(--text-dim); border-radius:6px; padding:5px 9px; font-size:.74rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:5px; transition:background .15s,color .15s;}
+  .chart-expand:hover{background:var(--surface-3); color:var(--text); border-color:var(--text-faint);}
+  .chart-wrap:fullscreen{height:100vh !important; width:100vw; background:var(--ink); padding:52px 32px 32px; box-sizing:border-box;}
+  .chart-wrap:-webkit-full-screen{height:100vh !important; width:100vw; background:var(--ink); padding:52px 32px 32px; box-sizing:border-box;}
+  .chart-wrap:fullscreen .chart-expand{top:14px; right:18px;}
 
   table{width:100%; border-collapse:collapse; font-size:.85rem;}
   table th, table td{padding:10px 14px; border-bottom:1px solid var(--border); text-align:left;}
@@ -131,7 +136,6 @@
     <div class="btn-row">
       <input type="file" id="file-input" accept=".xlsx,.xlsm" multiple hidden>
       <label for="file-input" class="btn btn-primary">Cargar boletín BCP o plantilla</label>
-      <button class="btn btn-ghost" id="btn-demo">Ver con datos de ejemplo</button>
       <button class="btn btn-ghost hidden" id="btn-export">Exportar resumen (Excel)</button>
       <button class="btn btn-ghost hidden" id="btn-export-json">Descargar datos actualizados (JSON)</button>
       <button class="btn btn-ghost hidden" id="btn-reset">Quitar todo</button>
@@ -143,6 +147,13 @@
   <div class="periods-inner">
     <span class="periods-label">Períodos cargados</span>
     <div id="period-chips" style="display:flex; gap:8px; flex-wrap:wrap; max-height:74px; overflow-y:auto; padding-right:4px;"></div>
+    <div style="display:flex; align-items:center; gap:8px; margin-left:auto; flex-wrap:wrap;">
+      <span class="periods-label">Filtrar rango</span>
+      <select id="rango-desde" style="min-width:110px;"></select>
+      <span style="color:var(--text-faint); font-size:.8rem;">a</span>
+      <select id="rango-hasta" style="min-width:110px;"></select>
+      <button class="btn btn-ghost btn-sm" id="rango-reset" type="button">Ver todo</button>
+    </div>
   </div>
 </div>
 
@@ -153,7 +164,6 @@
     <p>Subí directamente el boletín mensual del BCP (.xlsm, hoja "5. Cred. por sector") o tu planilla liviana "Datos" para ver evolución de cartera, comparar sectores entre bancos, crecimiento mensual/interanual, ranking de sectores y la posición de tu banco frente al sistema. Con un solo mes ya podés ver el ranking y la posición competitiva; para evolución y crecimiento conviene ir sumando boletines de más meses.</p>
     <div class="empty-actions">
       <label for="file-input" class="btn btn-primary">Cargar boletín BCP o plantilla</label>
-      <button class="btn" id="btn-demo-2">Ver con datos de ejemplo</button>
     </div>
     <p class="empty-note">El archivo se procesa en tu navegador: no se envía a ningún servidor.</p>
   </section>
@@ -161,7 +171,6 @@
   <div id="status-area"></div>
 
   <section id="app" class="hidden">
-    <div class="demo-banner hidden" id="demo-banner">◆ Estás viendo datos de ejemplo ilustrativos, no cifras oficiales del BCP. Cargá tu planilla real para reemplazarlos.</div>
     <div class="demo-banner hidden" id="auto-banner" style="border-color:rgba(95,174,130,.35); color:var(--positive); background:rgba(95,174,130,.08);">◆ Datos actualizados automáticamente desde el boletín oficial del BCP. <span id="auto-banner-date"></span></div>
 
     <div class="kpi-strip" id="kpi-strip"></div>
@@ -506,7 +515,14 @@ const ui = {
   t3: { banco:null, periodo:null },
   t4: { banco:null, periodo:null },
   t5: { banco:null, periodo:null },
+  rango: { desde:null, hasta:null },
 };
+
+function getFilteredPeriods(){
+  return state.periods.filter(p =>
+    (!ui.rango.desde || p>=ui.rango.desde) && (!ui.rango.hasta || p<=ui.rango.hasta)
+  );
+}
 
 function rebuildIndex(){
   state.index = new Map();
@@ -555,7 +571,6 @@ function readFileAsArrayBuffer(file){
 document.getElementById('file-input').addEventListener('change', async (e)=>{
   const files = Array.from(e.target.files||[]);
   if (!files.length) return;
-  if (state.mode==='demo'){ state.records = []; document.getElementById('demo-banner').classList.add('hidden'); }
   document.getElementById('auto-banner').classList.add('hidden');
   state.mode = 'real';
 
@@ -604,67 +619,6 @@ function showStatuses(statuses){
   ).join('') + '</div>';
 }
 
-/* ============================== datos de ejemplo ============================== */
-
-function mulberry32(seed){
-  return function(){
-    seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
-    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-const DEMO_BANKS = ['Atlas','Bancop','Basa','BNA','BNF','Citibank','Continental','Do Brasil','Familiar','GNB','Interfisa','Itaú','Solar','Sudameris','UENO','Zeta'];
-const DEMO_BANK_SCALE = { Continental:1, Sudameris:1, Itaú:1, BNF:.62, GNB:.6, UENO:.55, Familiar:.32, Atlas:.3, Basa:.3, Bancop:.18, Interfisa:.16, Zeta:.14, Solar:.12, 'Do Brasil':.03, Citibank:.02, BNA:.015 };
-const DEMO_SECTORS = ['ACTIVIDADES INMOBILIARIAS','ADMINISTRACION PUBLICA','AGRICULTURA','COMERCIO AL POR MAYOR','COMERCIO AL POR MENOR','CONSTRUCCION','CONSUMO','GANADERIA','INDUSTRIA','OTROS','SECTOR FINANCIERO','SERVICIOS','VIVIENDA'];
-
-function generateDemoRecords(){
-  const rng = mulberry32(771122);
-  const periods = []; let y=2025, m=5;
-  for (let i=0;i<13;i++){ periods.push(y+'-'+String(m).padStart(2,'0')); m++; if(m>12){m=1;y++;} }
-  const records = [];
-  DEMO_BANKS.forEach(bank=>{
-    const baseScale = (DEMO_BANK_SCALE[bank]||.2) * (24000000 + rng()*4000000);
-    let weights = DEMO_SECTORS.map(()=>0.3+rng());
-    const wsum = weights.reduce((a,b)=>a+b,0);
-    let levels = weights.map(w=>baseScale*w/wsum);
-    periods.forEach(p=>{
-      let total = 0;
-      const vals = levels.map((lvl)=>{
-        const growth = 1 + (0.003 + rng()*0.012);
-        const nv = lvl*growth*(0.97+rng()*0.06);
-        total += nv;
-        return nv;
-      });
-      levels = vals;
-      DEMO_SECTORS.forEach((sec,si)=>{ records.push({ periodo:p, sector:sec, banco:bank, monto:Math.round(vals[si]) }); });
-      records.push({ periodo:p, sector:'Total cartera', banco:bank, monto:Math.round(total) });
-    });
-  });
-  const sysMap = {};
-  records.forEach(r=>{
-    const key = r.periodo+'|'+r.sector;
-    sysMap[key] = (sysMap[key]||0) + r.monto;
-  });
-  Object.keys(sysMap).forEach(key=>{
-    const idx = key.indexOf('|');
-    const periodo = key.slice(0,idx), sector = key.slice(idx+1);
-    records.push({ periodo, sector, banco:'Sistema', monto: Math.round(sysMap[key]) });
-  });
-  return records;
-}
-
-function loadDemo(){
-  state.mode = 'demo';
-  state.records = generateDemoRecords();
-  document.getElementById('status-area').innerHTML='';
-  rebuildFromRecords();
-  document.getElementById('demo-banner').classList.remove('hidden');
-  goToApp();
-}
-document.getElementById('btn-demo').addEventListener('click', loadDemo);
-document.getElementById('btn-demo-2').addEventListener('click', loadDemo);
-
 /* ============================== ciclo de vida ============================== */
 
 function goToApp(){
@@ -674,6 +628,7 @@ function goToApp(){
   document.getElementById('btn-reset').classList.remove('hidden');
   document.getElementById('btn-export').classList.remove('hidden');
   document.getElementById('btn-export-json').classList.remove('hidden');
+  setupFullscreenButtons();
 }
 
 document.getElementById('btn-reset').addEventListener('click', ()=>{
@@ -683,7 +638,6 @@ document.getElementById('btn-reset').addEventListener('click', ()=>{
   document.getElementById('btn-reset').classList.add('hidden');
   document.getElementById('btn-export').classList.add('hidden');
   document.getElementById('btn-export-json').classList.add('hidden');
-  document.getElementById('demo-banner').classList.add('hidden');
   document.getElementById('auto-banner').classList.add('hidden');
   document.getElementById('status-area').innerHTML = '';
   document.getElementById('empty-state').classList.remove('hidden');
@@ -716,6 +670,7 @@ function rebuildFromRecords(){
   ui.t3.periodo = latest; ui.t4.periodo = latest; ui.t5.periodo = latest;
 
   renderPeriodChips();
+  renderRangoControls();
   populateSelects();
   renderKPIs();
   renderActiveTab();
@@ -727,6 +682,38 @@ function renderPeriodChips(){
     `<span class="period-chip">${fmtPeriod(p)}<button data-p="${p}" aria-label="Quitar período">×</button></span>`
   ).join('');
   el.querySelectorAll('button').forEach(b=> b.addEventListener('click', ()=>removePeriod(b.dataset.p)));
+}
+
+function renderRangoControls(){
+  const selD = document.getElementById('rango-desde'), selH = document.getElementById('rango-hasta');
+  const opts = state.periods.map(p=>`<option value="${p}">${fmtPeriod(p)}</option>`).join('');
+  selD.innerHTML = opts; selH.innerHTML = opts;
+  // Se reinicia a "todo el rango" cada vez que cambia el conjunto de períodos cargados (nueva
+  // carga, archivo removido, etc.) — evita que un filtro angosto elegido antes quede "pegado"
+  // y oculte en silencio meses recién agregados. Dentro de la misma sesión, cambiar de pestaña
+  // sí respeta el filtro elegido (no pasa por acá).
+  const rangoKey = state.periods.join(',');
+  if (ui.rango._periodsKey !== rangoKey){
+    ui.rango._periodsKey = rangoKey;
+    ui.rango.desde = state.periods[0];
+    ui.rango.hasta = state.periods[state.periods.length-1];
+  }
+  selD.value = ui.rango.desde; selH.value = ui.rango.hasta;
+  selD.onchange = ()=>{
+    ui.rango.desde = selD.value;
+    if (ui.rango.desde > ui.rango.hasta){ ui.rango.hasta = ui.rango.desde; selH.value = ui.rango.hasta; }
+    renderActiveTab();
+  };
+  selH.onchange = ()=>{
+    ui.rango.hasta = selH.value;
+    if (ui.rango.hasta < ui.rango.desde){ ui.rango.desde = ui.rango.hasta; selD.value = ui.rango.desde; }
+    renderActiveTab();
+  };
+  document.getElementById('rango-reset').onclick = ()=>{
+    ui.rango.desde = state.periods[0]; ui.rango.hasta = state.periods[state.periods.length-1];
+    selD.value = ui.rango.desde; selH.value = ui.rango.hasta;
+    renderActiveTab();
+  };
 }
 
 /* ============================== KPIs ============================== */
@@ -840,36 +827,79 @@ function setupChartDefaults(){
   return true;
 }
 
+// Ordena los ítems del tooltip de mayor a menor monto (los valores nulos, por spanGaps, van al final).
+function tooltipSortDesc(a, b){
+  const va = (a.raw===null || a.raw===undefined) ? -Infinity : a.raw;
+  const vb = (b.raw===null || b.raw===undefined) ? -Infinity : b.raw;
+  return vb - va;
+}
+
+/* ---- Expandir gráficos a pantalla completa ---- */
+function toggleChartFullscreen(wrap){
+  const doc = document;
+  const isFs = doc.fullscreenElement || doc.webkitFullscreenElement;
+  if (isFs){
+    (doc.exitFullscreen || doc.webkitExitFullscreen).call(doc);
+  } else {
+    (wrap.requestFullscreen || wrap.webkitRequestFullscreen).call(wrap);
+  }
+}
+function setupFullscreenButtons(){
+  document.querySelectorAll('.chart-wrap').forEach(wrap=>{
+    if (wrap.querySelector('.chart-expand')) return; // ya tiene botón
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'chart-expand';
+    btn.innerHTML = '⤢ Expandir';
+    btn.setAttribute('aria-label', 'Ver el gráfico en pantalla completa');
+    btn.addEventListener('click', ()=> toggleChartFullscreen(wrap));
+    wrap.appendChild(btn);
+  });
+}
+// Al entrar/salir de pantalla completa, Chart.js necesita recalcular el tamaño del lienzo,
+// y el texto del botón cambia según el estado.
+function onFullscreenChange(){
+  const fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+  document.querySelectorAll('.chart-expand').forEach(btn=>{
+    const enThisWrap = fsEl && btn.parentElement === fsEl;
+    btn.innerHTML = enThisWrap ? '⤡ Salir' : '⤢ Expandir';
+  });
+  Object.values(state.charts).forEach(c=>{ if (c) c.resize(); });
+}
+document.addEventListener('fullscreenchange', onFullscreenChange);
+document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+
 /* ---- Tab 1: evolución por banco ---- */
 function renderTab1(){
   const canvas = document.getElementById('chart-evolucion');
   if (state.charts.evolucion){ state.charts.evolucion.destroy(); state.charts.evolucion=null; }
   const bancos = Array.from(ui.t1.bancos);
   const note = document.getElementById('t1-note');
-  if (!setupChartDefaults() || state.periods.length===0 || bancos.length===0){
-    note.textContent = bancos.length===0 ? 'Elegí al menos un banco para graficar.' : '';
+  const periods = getFilteredPeriods();
+  if (!setupChartDefaults() || periods.length===0 || bancos.length===0){
+    note.textContent = bancos.length===0 ? 'Elegí al menos un banco para graficar.' : (periods.length===0 ? 'No hay períodos en el rango elegido.' : '');
     return;
   }
   const vista = ui.t1.vista;
   const datasets = bancos.map(b=>{
     const c = bankColor(b);
     return {
-      label: b, data: state.periods.map(p=>getVal(p, vista, b)),
+      label: b, data: periods.map(p=>getVal(p, vista, b)),
       borderColor:c, backgroundColor:c+'33', fill:false, tension:.3,
-      pointRadius: state.periods.length===1?5:2, spanGaps:true,
+      pointRadius: periods.length===1?5:2, spanGaps:true,
     };
   });
   state.charts.evolucion = new Chart(canvas, {
     type:'line',
-    data:{ labels: state.periods.map(fmtPeriod), datasets },
+    data:{ labels: periods.map(fmtPeriod), datasets },
     options:{
       responsive:true, maintainAspectRatio:false,
       interaction:{ mode:'index', intersect:false },
-      plugins:{ legend:{ position:'bottom', labels:{boxWidth:10,font:{size:11}} }, tooltip:{ callbacks:{ label:(c)=>c.dataset.label+': '+fmtGsFull(c.raw) } } },
+      plugins:{ legend:{ position:'bottom', labels:{boxWidth:10,font:{size:11}} }, tooltip:{ itemSort: tooltipSortDesc, callbacks:{ label:(c)=>c.dataset.label+': '+fmtGsFull(c.raw) } } },
       scales:{ y:{ ticks:{ callback:(v)=>fmtGs(v) } }, x:{ ticks:{ autoSkip:true, maxTicksLimit:16, maxRotation:55, minRotation:0 } } },
     }
   });
-  note.textContent = state.periods.length<2 ? `Cargado ${state.periods.length} período. Sumá más boletines mensuales para ver una tendencia real.` : '';
+  note.textContent = periods.length<2 ? `Mostrando ${periods.length} período. Sumá más boletines mensuales (o ampliá el rango) para ver una tendencia real.` : '';
 }
 
 /* ---- Tab 2: comparar sectores entre bancos ---- */
@@ -878,8 +908,9 @@ function renderTab2(){
   if (state.charts.comparar){ state.charts.comparar.destroy(); state.charts.comparar=null; }
   const sectores = Array.from(ui.t2.sectores), bancos = Array.from(ui.t2.bancos);
   const note = document.getElementById('t2-note');
-  if (!setupChartDefaults() || state.periods.length===0 || sectores.length===0 || bancos.length===0){
-    note.textContent = (sectores.length===0||bancos.length===0) ? 'Elegí al menos un sector y un banco.' : '';
+  const periods = getFilteredPeriods();
+  if (!setupChartDefaults() || periods.length===0 || sectores.length===0 || bancos.length===0){
+    note.textContent = (sectores.length===0||bancos.length===0) ? 'Elegí al menos un sector y un banco.' : (periods.length===0 ? 'No hay períodos en el rango elegido.' : '');
     return;
   }
   const datasets = [];
@@ -888,23 +919,23 @@ function renderTab2(){
       const c = bankColor(b);
       datasets.push({
         label: sectorLabel(sec)+' — '+b,
-        data: state.periods.map(p=>getVal(p, sec, b)),
+        data: periods.map(p=>getVal(p, sec, b)),
         borderColor:c, backgroundColor:'transparent', borderDash: sectorDash(sec),
-        tension:.3, pointRadius: state.periods.length===1?5:2, spanGaps:true,
+        tension:.3, pointRadius: periods.length===1?5:2, spanGaps:true,
       });
     });
   });
   state.charts.comparar = new Chart(canvas, {
     type:'line',
-    data:{ labels: state.periods.map(fmtPeriod), datasets },
+    data:{ labels: periods.map(fmtPeriod), datasets },
     options:{
       responsive:true, maintainAspectRatio:false,
       interaction:{ mode:'index', intersect:false },
-      plugins:{ legend:{ position:'bottom', labels:{boxWidth:10,font:{size:10}} }, tooltip:{ callbacks:{ label:(c)=>c.dataset.label+': '+fmtGsFull(c.raw) } } },
+      plugins:{ legend:{ position:'bottom', labels:{boxWidth:10,font:{size:10}} }, tooltip:{ itemSort: tooltipSortDesc, callbacks:{ label:(c)=>c.dataset.label+': '+fmtGsFull(c.raw) } } },
       scales:{ y:{ ticks:{ callback:(v)=>fmtGs(v) } }, x:{ ticks:{ autoSkip:true, maxTicksLimit:16, maxRotation:55, minRotation:0 } } },
     }
   });
-  note.textContent = datasets.length>12 ? 'Muchas combinaciones a la vez pueden saturar el gráfico — probá acotar sectores o bancos.' : (state.periods.length<2 ? `Cargado ${state.periods.length} período. Sumá más meses para ver tendencia.` : '');
+  note.textContent = datasets.length>12 ? 'Muchas combinaciones a la vez pueden saturar el gráfico — probá acotar sectores o bancos.' : (periods.length<2 ? `Mostrando ${periods.length} período. Sumá más meses (o ampliá el rango) para ver tendencia.` : '');
 }
 
 /* ---- Tab 3: crecimiento mensual / interanual ---- */
