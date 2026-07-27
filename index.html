@@ -108,6 +108,15 @@
   .chart-area .chart-wrap{flex:1; min-width:0;}
   .chart-wrap:fullscreen .chart-toolbar{display:none;}
 
+  #lock-screen{position:fixed; inset:0; z-index:1000; background:var(--ink); display:flex; align-items:center; justify-content:center; padding:24px;}
+  #lock-screen.hidden{display:none !important;}
+  .lock-card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:34px 30px; max-width:380px; width:100%; text-align:center;}
+  .lock-card h2{font-family:'Fraunces',serif; font-weight:600; font-size:1.35rem; margin:14px 0 6px;}
+  .lock-card p{color:var(--text-dim); font-size:.86rem; margin:0 0 22px;}
+  .lock-card input{width:100%; padding:11px 12px; border-radius:8px; border:1px solid var(--border); background:var(--surface-2); color:var(--text); font-size:.95rem; margin-bottom:10px;}
+  .lock-card input:focus{outline:none; border-color:var(--gold);}
+  .lock-err{color:var(--negative); font-size:.82rem; min-height:1.2em; margin-bottom:8px;}
+
   table{width:100%; border-collapse:collapse; font-size:.85rem;}
   table th, table td{padding:10px 14px; border-bottom:1px solid var(--border); text-align:left;}
   table thead th{background:var(--surface-2); color:var(--text-dim); position:sticky; top:0;}
@@ -128,6 +137,23 @@
 </style>
 </head>
 <body>
+
+<div id="lock-screen">
+  <div class="lock-card">
+    <svg width="40" height="40" viewBox="0 0 30 30" fill="none" style="margin:0 auto;">
+      <rect x="2" y="16" width="5" height="11" rx="1" fill="#5fae82"/>
+      <rect x="10" y="9" width="5" height="18" rx="1" fill="#d9a441"/>
+      <rect x="18" y="3" width="5" height="24" rx="1" fill="#6e8fb5"/>
+    </svg>
+    <h2>Créditos por Sector</h2>
+    <p>Ingresá la clave para acceder al panel.</p>
+    <form id="lock-form">
+      <input type="password" id="lock-input" placeholder="Clave" autocomplete="current-password" autofocus>
+      <div class="lock-err" id="lock-err"></div>
+      <button type="submit" class="btn btn-primary" style="width:100%;">Entrar</button>
+    </form>
+  </div>
+</div>
 
 <div class="topbar">
   <div class="topbar-accent"></div>
@@ -305,6 +331,34 @@
 </footer>
 
 <script>
+/* ============================== pantalla de clave ============================== */
+/* Gate liviano: oculta el panel hasta ingresar la clave. NO es seguridad real (el sitio y
+   los datos son públicos), solo evita que alguien que llegue a la URL vea el panel sin la
+   clave. La clave se guarda como hash SHA-256 para que no aparezca en texto plano en el código.
+   Para cambiar la clave: generá el hash de la nueva (por ej. en la consola del navegador con
+   la función de abajo) y reemplazá CLAVE_HASH. */
+(function(){
+  const CLAVE_HASH = '18b1d4f53c484ef2bae5cd6dbf9006f5de1ef88ddb7d0402ac818b9020068787'; // SHA-256 de la clave
+  const lock = document.getElementById('lock-screen');
+  const form = document.getElementById('lock-form');
+  const input = document.getElementById('lock-input');
+  const err = document.getElementById('lock-err');
+  async function sha256(txt){
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(txt));
+    return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  }
+  function unlock(){ lock.classList.add('hidden'); }
+  if (sessionStorage.getItem('bcp-auth')==='1'){ unlock(); }
+  else { setTimeout(()=>{ try{ input.focus(); }catch(e){} }, 50); }
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    let ok = false;
+    try{ ok = (await sha256(input.value)) === CLAVE_HASH; }catch(_){ ok = false; }
+    if (ok){ sessionStorage.setItem('bcp-auth','1'); err.textContent=''; unlock(); }
+    else { err.textContent = 'Clave incorrecta.'; input.value=''; input.focus(); }
+  });
+})();
+
 /* ============================== utilidades ============================== */
 
 const BANK_ALIASES = { 'Amambay':'Basa', 'FINEXPAR':'Zeta' };
@@ -461,9 +515,9 @@ function parseBcpBulletinSheet(rows){
     if (fechaVal!==null && fechaVal!==undefined && String(fechaVal).trim()!==''){
       const s = String(fechaVal).trim();
       if (/^total/i.test(s)){
-        isTotalRow = true;
         const m = s.match(/(\d{4}[-/]\d{1,2})/);
-        if (m) period = normalizePeriodValue(m[1]);
+        if (m){ isTotalRow = true; period = normalizePeriodValue(m[1]); }
+        else continue; // "Total general" u otro total sin fecha: no es un mes, se ignora
       } else {
         period = normalizePeriodValue(fechaVal);
       }
@@ -621,8 +675,9 @@ document.getElementById('file-input').addEventListener('change', async (e)=>{
       }
       if (result.error){ statuses.push({file:file.name, ok:false, msg:result.error}); continue; }
       result.records.forEach(r=> merged.set(r.periodo+'|'+r.sector+'|'+r.banco, r));
-      const periodsFound = Array.from(new Set(result.records.map(r=>r.periodo))).sort();
-      statuses.push({file:file.name, ok:true, msg:'Cargado desde '+sourceLabel+': '+periodsFound.map(fmtPeriod).join(', ')+' ('+result.records.length+' filas).'});
+      const conDatos = dropEmptyPeriods(result.records);
+      const periodsFound = Array.from(new Set(conDatos.map(r=>r.periodo))).sort();
+      statuses.push({file:file.name, ok:true, msg:'Cargado desde '+sourceLabel+': '+periodsFound.map(fmtPeriod).join(', ')+' ('+conDatos.length+' filas con datos).'});
     }catch(err){
       statuses.push({file:file.name, ok:false, msg:'No pudimos leer este archivo. ¿Es un .xlsx/.xlsm válido con hoja "Datos" o "5. Cred. por sector"?'});
       console.error(err);
@@ -678,7 +733,21 @@ function removePeriod(p){
   rebuildFromRecords();
 }
 
+// Descarta los períodos "fantasma": meses que en el Excel están seleccionados en el filtro de
+// Fecha pero todavía no tienen datos, y que la tabla dinámica exporta con ceros. Un mes real
+// siempre tiene al menos un monto distinto de cero; si un período no tiene ninguno, se elimina
+// por completo. Así "el mes más reciente" pasa a ser siempre el último mes con datos reales,
+// y cuando actualices el Excel con un mes nuevo, se toma solo.
+function dropEmptyPeriods(records){
+  const conDatos = new Set();
+  records.forEach(r=>{
+    if (r.monto !== null && r.monto !== undefined && !isNaN(r.monto) && r.monto !== 0) conDatos.add(r.periodo);
+  });
+  return records.filter(r=> conDatos.has(r.periodo));
+}
+
 function rebuildFromRecords(){
+  state.records = dropEmptyPeriods(state.records);
   rebuildLists();
   rebuildIndex();
 
