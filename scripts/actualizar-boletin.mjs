@@ -95,9 +95,9 @@ function parseBcpBulletinSheet(rows){
     if (fechaVal!==null && fechaVal!==undefined && String(fechaVal).trim()!==''){
       const s = String(fechaVal).trim();
       if (/^total/i.test(s)){
-        isTotalRow = true;
         const m = s.match(/(\d{4}[-/]\d{1,2})/);
-        if (m) period = normalizePeriodValue(m[1]);
+        if (m){ isTotalRow = true; period = normalizePeriodValue(m[1]); }
+        else continue; // "Total general" u otro total sin fecha: no es un mes, se ignora
       } else {
         period = normalizePeriodValue(fechaVal);
       }
@@ -120,6 +120,15 @@ function findBulletinSheetName(sheetNames){
     const norm = normalizeAscii(n);
     return norm.includes('cred') && norm.includes('sector');
   });
+}
+
+// Descarta meses "fantasma": períodos seleccionados en el filtro de Fecha del Excel que todavía
+// no tienen datos y que la tabla dinámica exporta con ceros. Un mes real siempre tiene al menos
+// un monto distinto de cero.
+function dropEmptyPeriods(records){
+  const conDatos = new Set();
+  records.forEach(r=>{ if (r.monto !== null && r.monto !== undefined && !isNaN(r.monto) && r.monto !== 0) conDatos.add(r.periodo); });
+  return records.filter(r=> conDatos.has(r.periodo));
 }
 
 /* ============================== main ============================== */
@@ -177,7 +186,7 @@ async function main(){
 
   const salida = {
     actualizado: new Date().toISOString(),
-    records: Array.from(merged.values()),
+    records: dropEmptyPeriods(Array.from(merged.values())),
   };
 
   await mkdir(path.dirname(DATA_PATH), { recursive: true });
