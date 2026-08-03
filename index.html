@@ -11,11 +11,22 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/2.0.1/chartjs-plugin-zoom.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-  :root{
+  :root, :root[data-theme="dark"]{
     --ink:#0e1b2b; --surface:#15263b; --surface-2:#1c314a; --surface-3:#223a57;
-    --border:#2a3f58; --text:#edeff2; --text-dim:#8fa1b8; --text-faint:#5d7290;
-    --gold:#d9a441; --positive:#5fae82; --negative:#c1614b;
+    --border:#2a3f58; --text:#edeff2; --text-dim:#93a6bd; --text-faint:#647a99;
+    --gold:#e0ad4d; --positive:#5fae82; --negative:#d0705a;
+    --topbar-bg:rgba(14,27,43,.94); --bar-bg:rgba(21,38,59,.72); --row-hover:rgba(255,255,255,.035);
+    --grid:rgba(255,255,255,.06); --shadow:0 1px 3px rgba(0,0,0,.35);
     --radius:10px; --radius-lg:16px;
+    color-scheme:dark;
+  }
+  :root[data-theme="light"]{
+    --ink:#eef2f7; --surface:#ffffff; --surface-2:#f2f6fb; --surface-3:#e6edf5;
+    --border:#d5dee9; --text:#14293e; --text-dim:#526a86; --text-faint:#8496ab;
+    --gold:#a9781a; --positive:#2e8b5c; --negative:#c0492f;
+    --topbar-bg:rgba(255,255,255,.9); --bar-bg:rgba(242,246,251,.86); --row-hover:rgba(20,41,62,.04);
+    --grid:rgba(20,41,62,.08); --shadow:0 1px 3px rgba(20,41,62,.08);
+    color-scheme:light;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
@@ -26,7 +37,7 @@
   .num{font-family:'IBM Plex Mono',monospace;}
   .hidden{display:none !important;}
 
-  .topbar{position:sticky; top:0; z-index:40; background:rgba(14,27,43,.94); backdrop-filter:blur(8px); border-bottom:1px solid var(--border);}
+  .topbar{position:sticky; top:0; z-index:40; background:var(--topbar-bg); backdrop-filter:blur(8px); border-bottom:1px solid var(--border);}
   .topbar-accent{height:2px; background:linear-gradient(90deg,var(--gold) 0%,transparent 70%);}
   .topbar-inner{max-width:1320px; margin:0 auto; padding:14px 24px; display:flex; align-items:center; gap:16px; flex-wrap:wrap;}
   .brand{display:flex; align-items:center; gap:10px; margin-right:auto;}
@@ -40,16 +51,25 @@
   .btn-primary:hover{background:#e3b561; border-color:#e3b561;}
   .btn-ghost{background:transparent;}
   .btn-sm{padding:6px 11px; font-size:.76rem;}
-  .btn-row{display:flex; gap:10px; flex-wrap:wrap;}
+  .btn-row{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
+  .icon-btn{display:inline-flex; align-items:center; justify-content:center; width:38px; height:38px; padding:0;}
+  .icon-btn svg{width:18px; height:18px; display:block;}
+
+  /* barra de desplazamiento horizontal de los gráficos temporales */
+  .chart-scroll{margin:12px 0 0; display:none;}
+  .chart-scroll.on{display:block;}
+  .chart-scroll-track{position:relative; height:13px; background:var(--surface-2); border:1px solid var(--border); border-radius:20px; cursor:pointer;}
+  .chart-scroll-thumb{position:absolute; top:-1px; bottom:-1px; left:0; width:100%; min-width:26px; background:var(--gold); border-radius:20px; cursor:grab; opacity:.85; touch-action:none;}
+  .chart-scroll-thumb:hover{opacity:1;}
+  .chart-scroll-thumb:active{cursor:grabbing;}
+  .chart-scroll-hint{font-size:.72rem; color:var(--text-faint); margin-top:6px;}
 
   main{max-width:1320px; margin:0 auto; padding:24px 24px 80px;}
 
-  .periods-bar{border-bottom:1px solid var(--border); background:rgba(21,38,59,.7);}
-  .periods-inner{max-width:1320px; margin:0 auto; padding:10px 24px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
-  .periods-label{font-size:.72rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:.04em;}
-  .period-chip{display:inline-flex; align-items:center; gap:6px; font-family:'IBM Plex Mono',monospace; font-size:.74rem; padding:4px 6px 4px 10px; border-radius:20px; border:1px solid var(--border); background:var(--surface-2); color:var(--text-dim);}
-  .period-chip button{background:none; border:none; color:var(--text-faint); cursor:pointer; font-size:.85rem; padding:2px 5px; line-height:1;}
-  .period-chip button:hover{color:var(--negative);}
+  .periods-bar{border-bottom:1px solid var(--border); background:var(--bar-bg); backdrop-filter:blur(8px);}
+  .periods-inner{max-width:1320px; margin:0 auto; padding:12px 24px; display:flex; align-items:center; gap:12px; flex-wrap:wrap;}
+  .periods-label{font-size:.72rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:.05em; font-weight:600;}
+  .rango-count{font-size:.76rem; color:var(--text-dim); margin-left:auto; font-family:'IBM Plex Mono',monospace;}
 
   .empty-state{margin-top:6vh; text-align:center; max-width:600px; margin-inline:auto;}
   .empty-state h1{font-family:'Fraunces',serif; font-size:1.9rem; font-weight:600; margin:0 0 10px;}
@@ -66,7 +86,7 @@
   .demo-banner{background:rgba(217,164,65,.1); border:1px solid rgba(217,164,65,.35); color:var(--gold); border-radius:8px; padding:9px 14px; font-size:.8rem; margin-bottom:20px; display:flex; gap:10px; align-items:center;}
 
   .kpi-strip{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin:6px 0 26px;}
-  .kpi-card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:18px 18px 16px;}
+  .kpi-card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:18px 18px 16px; box-shadow:var(--shadow);}
   .kpi-label{font-size:.72rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:.04em; margin-bottom:8px;}
   .kpi-value{font-family:'Fraunces',serif; font-size:1.4rem; font-weight:600; line-height:1.15; word-break:break-word;}
   .kpi-sub{font-size:.78rem; color:var(--text-faint); margin-top:6px;}
@@ -80,7 +100,7 @@
   .tab-btn:hover{color:var(--text);}
   .tab-btn.active{color:var(--gold); border-bottom-color:var(--gold);}
 
-  .panel{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:20px;}
+  .panel{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:20px; box-shadow:var(--shadow);}
   .panel h3{font-family:'Fraunces',serif; font-weight:600; font-size:1.05rem; margin:0 0 4px;}
   .panel .panel-hint{font-size:.82rem; color:var(--text-dim); margin:0 0 16px;}
   .controls-row{display:flex; gap:18px; flex-wrap:wrap; margin-bottom:16px; align-items:flex-start;}
@@ -122,7 +142,7 @@
   table thead th{background:var(--surface-2); color:var(--text-dim); position:sticky; top:0;}
   table thead button{background:none; border:none; color:inherit; font:inherit; font-weight:600; cursor:pointer; padding:0; display:flex; align-items:center; gap:5px;}
   table td.num{font-family:'IBM Plex Mono',monospace; text-align:right;}
-  table tbody tr:hover{background:rgba(255,255,255,.03);}
+  table tbody tr:hover{background:var(--row-hover);}
   tr.pinned-row{background:rgba(217,164,65,.05);}
   .table-wrap{overflow-x:auto; border:1px solid var(--border); border-radius:10px;}
 
@@ -135,6 +155,17 @@
     .topbar-inner{padding:12px 16px;} main{padding:20px 16px 60px;}
   }
 </style>
+<script>
+  /* Fija el tema (claro/oscuro) antes de pintar, para que no haya un "parpadeo" al cargar.
+     Usa lo que el usuario haya elegido antes; si nunca eligió, sigue la preferencia del sistema. */
+  (function(){
+    try{
+      var t = localStorage.getItem('bcp-theme');
+      if (t!=='light' && t!=='dark') t = 'dark'; // por defecto oscuro; el modo claro queda a un clic
+      document.documentElement.setAttribute('data-theme', t);
+    }catch(e){ document.documentElement.setAttribute('data-theme','dark'); }
+  })();
+</script>
 </head>
 <body>
 
@@ -170,10 +201,10 @@
       </div>
     </div>
     <div class="btn-row">
+      <button class="btn btn-ghost icon-btn" id="theme-toggle" type="button" aria-label="Cambiar entre modo claro y oscuro" title="Cambiar modo claro / oscuro"></button>
       <input type="file" id="file-input" accept=".xlsx,.xlsm" multiple hidden>
       <label for="file-input" class="btn btn-primary">Cargar boletín BCP o plantilla</label>
       <button class="btn btn-ghost hidden" id="btn-export">Exportar resumen (Excel)</button>
-      <button class="btn btn-ghost hidden" id="btn-export-json">Descargar datos actualizados (JSON)</button>
       <button class="btn btn-ghost hidden" id="btn-reset">Quitar todo</button>
     </div>
   </div>
@@ -181,15 +212,12 @@
 
 <div class="periods-bar hidden" id="periods-bar">
   <div class="periods-inner">
-    <span class="periods-label">Períodos cargados</span>
-    <div id="period-chips" style="display:flex; gap:8px; flex-wrap:wrap; max-height:74px; overflow-y:auto; padding-right:4px;"></div>
-    <div style="display:flex; align-items:center; gap:8px; margin-left:auto; flex-wrap:wrap;">
-      <span class="periods-label">Filtrar rango</span>
-      <select id="rango-desde" style="min-width:110px;"></select>
-      <span style="color:var(--text-faint); font-size:.8rem;">a</span>
-      <select id="rango-hasta" style="min-width:110px;"></select>
-      <button class="btn btn-ghost btn-sm" id="rango-reset" type="button">Ver todo</button>
-    </div>
+    <span class="periods-label">Filtrar rango</span>
+    <select id="rango-desde" style="min-width:160px;"></select>
+    <span style="color:var(--text-faint); font-size:.85rem;">a</span>
+    <select id="rango-hasta" style="min-width:160px;"></select>
+    <button class="btn btn-ghost btn-sm" id="rango-reset" type="button">Ver todo</button>
+    <span class="rango-count" id="rango-count"></span>
   </div>
 </div>
 
@@ -237,6 +265,10 @@
           <div class="chart-toolbar" id="tools-evolucion"></div>
           <div class="chart-wrap"><canvas id="chart-evolucion"></canvas></div>
         </div>
+        <div class="chart-scroll" id="scroll-evolucion">
+          <div class="chart-scroll-track"><div class="chart-scroll-thumb"></div></div>
+          <div class="chart-scroll-hint">Al acercar, arrastrá esta barra (o el gráfico) para desplazarte por las fechas sin perder el zoom.</div>
+        </div>
         <div class="note" id="t1-note"></div>
       </div>
     </div>
@@ -258,6 +290,10 @@
         <div class="chart-area">
           <div class="chart-toolbar" id="tools-comparar"></div>
           <div class="chart-wrap"><canvas id="chart-comparar"></canvas></div>
+        </div>
+        <div class="chart-scroll" id="scroll-comparar">
+          <div class="chart-scroll-track"><div class="chart-scroll-thumb"></div></div>
+          <div class="chart-scroll-hint">Al acercar, arrastrá esta barra (o el gráfico) para desplazarte por las fechas sin perder el zoom.</div>
         </div>
         <div class="note" id="t2-note"></div>
       </div>
@@ -411,7 +447,14 @@ function fmtPeriod(p){
   const m = String(p).match(/^(\d{4})-(\d{2})$/);
   if (!m) return p;
   const names = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-  return names[parseInt(m[2],10)-1] + ' ' + m[1].slice(2);
+  return names[parseInt(m[2],10)-1] + ' ' + m[1];
+}
+// Versión larga (mes completo + año de 4 dígitos), para el filtro de rango: "Enero 2016".
+function fmtPeriodLong(p){
+  const m = String(p).match(/^(\d{4})-(\d{2})$/);
+  if (!m) return p;
+  const names = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  return names[parseInt(m[2],10)-1] + ' ' + m[1];
 }
 
 function shiftPeriod(p, deltaMonths){
@@ -443,11 +486,20 @@ function sectorLabel(s){
   return s.toLowerCase().split(' ').map(w=> STOPWORDS.has(w) ? w : (w.charAt(0).toUpperCase()+w.slice(1))).join(' ');
 }
 
-const SERIES_COLORS = ['#5fae82','#6e8fb5','#c1614b','#9b8ac4','#4fa8a0','#e0935b','#c77fa0','#8aa05f','#5f8aa0','#a05f8a','#a08a5f','#5fa0a0','#8a5fa0','#a05f5f','#5f5fa0','#a08a8a','#8a8a5f'];
+// Paleta categórica de alto contraste: colores bien separados en el círculo cromático y con
+// saturación media, para que varias series se distingan fácil incluso en la pantalla de una
+// notebook de oficina, tanto en modo claro como oscuro. Los primeros son los más diferentes
+// entre sí (se usan cuando hay pocas series seleccionadas).
+const SERIES_COLORS = ['#3b82f6','#ef4444','#22c55e','#f59e0b','#a855f7','#ec4899','#14b8a6','#ca8a04','#f97316','#6366f1','#65a30d','#06b6d4','#e11d48','#d946ef','#0ea5e9','#b45309'];
 function bankColor(banco){
-  if (banco==='Sistema') return '#d9a441';
+  if (banco==='Sistema') return '#e0ad4d'; // el "Sistema" siempre en dorado, como acento fijo
   const others = state.bancos.filter(b=>b!=='Sistema');
   const idx = others.indexOf(banco);
+  return SERIES_COLORS[idx % SERIES_COLORS.length];
+}
+// Color por combinación (sector–banco) en la pestaña de comparación: cada línea recibe un color
+// propio de la paleta para que se distingan aunque compartan banco o sector.
+function comboColor(idx){
   return SERIES_COLORS[idx % SERIES_COLORS.length];
 }
 function sectorDash(sector){
@@ -705,7 +757,6 @@ function goToApp(){
   document.getElementById('periods-bar').classList.remove('hidden');
   document.getElementById('btn-reset').classList.remove('hidden');
   document.getElementById('btn-export').classList.remove('hidden');
-  document.getElementById('btn-export-json').classList.remove('hidden');
   setupFullscreenButtons();
 }
 
@@ -715,7 +766,6 @@ document.getElementById('btn-reset').addEventListener('click', ()=>{
   document.getElementById('periods-bar').classList.add('hidden');
   document.getElementById('btn-reset').classList.add('hidden');
   document.getElementById('btn-export').classList.add('hidden');
-  document.getElementById('btn-export-json').classList.add('hidden');
   document.getElementById('auto-banner').classList.add('hidden');
   document.getElementById('status-area').innerHTML = '';
   document.getElementById('empty-state').classList.remove('hidden');
@@ -723,15 +773,6 @@ document.getElementById('btn-reset').addEventListener('click', ()=>{
   Object.values(state.charts).forEach(c=>{ if(c) c.destroy(); });
   state.charts = {};
 });
-
-function removePeriod(p){
-  state.records = state.records.filter(r=>r.periodo!==p);
-  if (state.records.length===0){
-    document.getElementById('btn-reset').click();
-    return;
-  }
-  rebuildFromRecords();
-}
 
 // Descarta los períodos "fantasma": meses que en el Excel están seleccionados en el filtro de
 // Fecha pero todavía no tienen datos, y que la tabla dinámica exporta con ceros. Un mes real
@@ -761,24 +802,25 @@ function rebuildFromRecords(){
   if (!ui.t5.banco || !state.bancos.includes(ui.t5.banco)) ui.t5.banco = state.bancos.includes('GNB') ? 'GNB' : (state.bancos.find(b=>b!=='Sistema') || 'Sistema');
   ui.t3.periodo = latest; ui.t4.periodo = latest; ui.t5.periodo = latest;
 
-  renderPeriodChips();
   renderRangoControls();
   populateSelects();
   renderKPIs();
   renderActiveTab();
 }
 
-function renderPeriodChips(){
-  const el = document.getElementById('period-chips');
-  el.innerHTML = state.periods.map(p=>
-    `<span class="period-chip">${fmtPeriod(p)}<button data-p="${p}" aria-label="Quitar período">×</button></span>`
-  ).join('');
-  el.querySelectorAll('button').forEach(b=> b.addEventListener('click', ()=>removePeriod(b.dataset.p)));
+// Resumen del rango elegido: cuántos meses y qué años abarca ("24 meses · 2016–2018").
+function updateRangoCount(){
+  const el = document.getElementById('rango-count');
+  if (!el) return;
+  const fp = getFilteredPeriods();
+  if (!fp.length){ el.textContent = ''; return; }
+  const y1 = fp[0].slice(0,4), y2 = fp[fp.length-1].slice(0,4);
+  el.textContent = fp.length + (fp.length===1?' mes':' meses') + ' · ' + (y1===y2 ? y1 : (y1+'–'+y2));
 }
 
 function renderRangoControls(){
   const selD = document.getElementById('rango-desde'), selH = document.getElementById('rango-hasta');
-  const opts = state.periods.map(p=>`<option value="${p}">${fmtPeriod(p)}</option>`).join('');
+  const opts = state.periods.map(p=>`<option value="${p}">${fmtPeriodLong(p)}</option>`).join('');
   selD.innerHTML = opts; selH.innerHTML = opts;
   // Se reinicia a "todo el rango" cada vez que cambia el conjunto de períodos cargados (nueva
   // carga, archivo removido, etc.) — evita que un filtro angosto elegido antes quede "pegado"
@@ -791,19 +833,23 @@ function renderRangoControls(){
     ui.rango.hasta = state.periods[state.periods.length-1];
   }
   selD.value = ui.rango.desde; selH.value = ui.rango.hasta;
+  updateRangoCount();
   selD.onchange = ()=>{
     ui.rango.desde = selD.value;
     if (ui.rango.desde > ui.rango.hasta){ ui.rango.hasta = ui.rango.desde; selH.value = ui.rango.hasta; }
+    updateRangoCount();
     renderActiveTab();
   };
   selH.onchange = ()=>{
     ui.rango.hasta = selH.value;
     if (ui.rango.hasta < ui.rango.desde){ ui.rango.desde = ui.rango.hasta; selD.value = ui.rango.desde; }
+    updateRangoCount();
     renderActiveTab();
   };
   document.getElementById('rango-reset').onclick = ()=>{
     ui.rango.desde = state.periods[0]; ui.rango.hasta = state.periods[state.periods.length-1];
     selD.value = ui.rango.desde; selH.value = ui.rango.hasta;
+    updateRangoCount();
     renderActiveTab();
   };
 }
@@ -911,11 +957,29 @@ function renderChips(container, items, selectedSet, labelFn, colorFn, onToggle){
 
 /* ============================== Chart.js helpers ============================== */
 
+// Lee un color del tema actual (variable CSS) para que los gráficos se adapten a claro/oscuro.
+function cssVar(name, fallback){
+  try{
+    const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    return v || fallback;
+  }catch(e){ return fallback; }
+}
+function themeColors(){
+  const isLight = document.documentElement.getAttribute('data-theme')==='light';
+  return {
+    text: cssVar('--text-dim', isLight?'#526a86':'#93a6bd'),
+    strong: cssVar('--text', isLight?'#14293e':'#edeff2'),
+    grid: cssVar('--grid', isLight?'rgba(20,41,62,.08)':'rgba(255,255,255,.06)'),
+    ink: cssVar('--ink', isLight?'#eef2f7':'#0e1b2b'),
+  };
+}
+
 function setupChartDefaults(){
   if (typeof Chart === 'undefined') return false;
-  Chart.defaults.color = '#8fa1b8';
+  const tc = themeColors();
+  Chart.defaults.color = tc.text;
   Chart.defaults.font.family = "'Inter', sans-serif";
-  Chart.defaults.borderColor = 'rgba(255,255,255,0.06)';
+  Chart.defaults.borderColor = tc.grid;
   ensureZoomPlugin();
   registerBCPChartPlugins();
   return true;
@@ -990,6 +1054,7 @@ const dataLabelsPlugin = {
   afterDatasetsDraw(chart){
     if (!chart.$showLabels) return;
     const ctx = chart.ctx;
+    const labelColor = themeColors().strong;
     ctx.save();
     ctx.font = '600 10px Inter, sans-serif';
     ctx.textAlign = 'center';
@@ -1001,7 +1066,7 @@ const dataLabelsPlugin = {
       meta.data.forEach((pt, i)=>{
         const v = ds.data[i];
         if (v===null || v===undefined || isNaN(v)) return;
-        ctx.fillStyle = '#edeff2';
+        ctx.fillStyle = labelColor;
         ctx.fillText(fmtGs(v), pt.x, pt.y - 5);
       });
     });
@@ -1053,7 +1118,7 @@ const drawingsPlugin = {
       const txt = (isNaN(pct)?'s/d':(pct>=0?'+':'')+pct.toFixed(1).replace('.',',')+'%') + '  ·  ' + Math.abs(meses) + ' mes' + (Math.abs(meses)===1?'':'es');
       ctx.font='700 11px Inter, sans-serif'; ctx.textAlign='left'; ctx.textBaseline='middle';
       const tw = ctx.measureText(txt).width;
-      ctx.fillStyle = 'rgba(14,27,43,.85)'; ctx.fillRect(x2+8, y2-11, tw+12, 22);
+      ctx.globalAlpha = .85; ctx.fillStyle = themeColors().ink; ctx.fillRect(x2+8, y2-11, tw+12, 22); ctx.globalAlpha = 1;
       ctx.strokeStyle = up ? '#5fae82' : '#c1614b'; ctx.lineWidth=1; ctx.strokeRect(x2+8, y2-11, tw+12, 22);
       ctx.fillStyle = up ? '#5fae82' : '#c1614b'; ctx.fillText(txt, x2+14, y2+1);
     }
@@ -1073,9 +1138,73 @@ function registerBCPChartPlugins(){
 function zoomOptions(key){
   const st = chartTools[key];
   return {
-    zoom: { wheel:{ enabled:true }, pinch:{ enabled:true }, mode:'x' },
-    pan:  { enabled: !st.activeTool, mode:'x' },
+    zoom: { wheel:{ enabled:true }, pinch:{ enabled:true }, mode:'x', onZoomComplete:()=>updateScrollbar(key) },
+    pan:  { enabled: !st.activeTool, mode:'x', onPanComplete:()=>updateScrollbar(key) },
   };
+}
+
+/* ---- Barra de desplazamiento horizontal de los gráficos temporales ----
+   Al acercar (zoom) sobre un gráfico de líneas, se muestra una barra debajo que representa toda
+   la línea de tiempo; el "pulgar" marca la ventana visible. Arrastrándolo (o tocando la pista)
+   uno se mueve mes a mes con precisión, sin tener que restablecer el zoom para no perder los
+   meses más recientes. */
+function updateScrollbar(key){
+  const c = state.charts[key];
+  const bar = document.getElementById('scroll-'+key);
+  if (!c || !bar) return;
+  const thumb = bar.querySelector('.chart-scroll-thumb');
+  const n = c.data.labels.length;
+  const full = n - 1;
+  if (n <= 1){ bar.classList.remove('on'); return; }
+  const min = (c.scales.x.min ?? 0), max = (c.scales.x.max ?? full);
+  const span = max - min;
+  if (span >= full - 0.01){ bar.classList.remove('on'); return; } // rango completo → sin barra
+  bar.classList.add('on');
+  const leftPct = Math.max(0, (min / full) * 100);
+  const widthPct = Math.min(100 - leftPct, (span / full) * 100);
+  thumb.style.left = leftPct + '%';
+  thumb.style.width = widthPct + '%';
+}
+
+function setupScrollbar(key){
+  const bar = document.getElementById('scroll-'+key);
+  if (!bar || bar.dataset.wired) return;
+  bar.dataset.wired = '1';
+  const track = bar.querySelector('.chart-scroll-track');
+  const thumb = bar.querySelector('.chart-scroll-thumb');
+  let drag = null;
+  thumb.addEventListener('pointerdown', (e)=>{
+    const c = state.charts[key]; if (!c) return;
+    const n = c.data.labels.length, full = n - 1;
+    const min = (c.scales.x.min ?? 0), max = (c.scales.x.max ?? full);
+    drag = { startX:e.clientX, startMin:min, span:max-min, trackW:track.getBoundingClientRect().width, full };
+    try{ thumb.setPointerCapture(e.pointerId); }catch(_){}
+    e.preventDefault();
+  });
+  thumb.addEventListener('pointermove', (e)=>{
+    if (!drag) return;
+    const c = state.charts[key]; if (!c) return;
+    const dIdx = ((e.clientX - drag.startX) / drag.trackW) * drag.full;
+    let newMin = drag.startMin + dIdx;
+    newMin = Math.max(0, Math.min(newMin, drag.full - drag.span));
+    c.zoomScale('x', { min:newMin, max:newMin + drag.span }, 'none');
+    updateScrollbar(key);
+  });
+  const endDrag = ()=>{ drag = null; };
+  thumb.addEventListener('pointerup', endDrag);
+  thumb.addEventListener('pointercancel', endDrag);
+  track.addEventListener('pointerdown', (e)=>{
+    if (e.target === thumb) return; // clic en la pista (no en el pulgar): saltar a esa zona
+    const c = state.charts[key]; if (!c) return;
+    const n = c.data.labels.length, full = n - 1;
+    const min = (c.scales.x.min ?? 0), max = (c.scales.x.max ?? full);
+    const span = max - min;
+    const rect = track.getBoundingClientRect();
+    let newMin = ((e.clientX - rect.left) / rect.width) * full - span/2;
+    newMin = Math.max(0, Math.min(newMin, full - span));
+    c.zoomScale('x', { min:newMin, max:newMin + span }, 'none');
+    updateScrollbar(key);
+  });
 }
 
 // Convierte la posición del mouse a coordenadas de datos (x = índice de período, y = monto).
@@ -1212,9 +1341,9 @@ function buildChartToolbar(key, containerId, rerender){
   const st = chartTools[key];
   const tools = [
     { grupo:'zoom', items:[
-      { id:'zin', title:'Acercar', html:'🔍+', onClick:()=>{ const c=state.charts[key]; if(c&&c.zoom) c.zoom(1.2); } },
-      { id:'zout', title:'Alejar', html:'🔍–', onClick:()=>{ const c=state.charts[key]; if(c&&c.zoom) c.zoom(0.8); } },
-      { id:'zreset', title:'Restablecer zoom', html:'⟳', onClick:()=>{ const c=state.charts[key]; if(c&&c.resetZoom) c.resetZoom(); } },
+      { id:'zin', title:'Acercar', html:'🔍+', onClick:()=>{ const c=state.charts[key]; if(c&&c.zoom){ c.zoom(1.2); updateScrollbar(key); } } },
+      { id:'zout', title:'Alejar', html:'🔍–', onClick:()=>{ const c=state.charts[key]; if(c&&c.zoom){ c.zoom(0.8); updateScrollbar(key); } } },
+      { id:'zreset', title:'Restablecer zoom', html:'⟳', onClick:()=>{ const c=state.charts[key]; if(c&&c.resetZoom){ c.resetZoom(); updateScrollbar(key); } } },
     ]},
     { grupo:'escala', items:[
       { id:'base100', title:'Rebase a base 100 (comparar crecimiento)', html:'100', toggle:'base100' },
@@ -1313,8 +1442,10 @@ function renderTab1(){
   state.charts.evolucion.$base100 = chartTools.evolucion.base100;
   buildChartToolbar('evolucion', 'tools-evolucion', renderTab1);
   attachDrawingHandlers(state.charts.evolucion, 'evolucion');
+  setupScrollbar('evolucion');
   syncToolbar('evolucion', 'tools-evolucion');
   state.charts.evolucion.update('none');
+  updateScrollbar('evolucion');
   note.textContent = periods.length<2 ? `Mostrando ${periods.length} período. Sumá más boletines mensuales (o ampliá el rango) para ver una tendencia real.` : '';
 }
 
@@ -1333,12 +1464,12 @@ function renderTab2(){
   let datasets = [];
   sectores.forEach(sec=>{
     bancos.forEach(b=>{
-      const c = bankColor(b);
+      const c = comboColor(datasets.length); // color propio por combinación → líneas bien distinguibles
       datasets.push({
         label: sectorLabel(sec)+' — '+b,
         data: periods.map(p=>getVal(p, sec, b)),
         borderColor:c, backgroundColor:'transparent', borderDash: sectorDash(sec),
-        tension:.3, pointRadius: periods.length===1?5:2, spanGaps:true,
+        tension:.3, pointRadius: periods.length===1?5:2, borderWidth:2.2, spanGaps:true,
       });
     });
   });
@@ -1366,8 +1497,10 @@ function renderTab2(){
   state.charts.comparar.$base100 = chartTools.comparar.base100;
   buildChartToolbar('comparar', 'tools-comparar', renderTab2);
   attachDrawingHandlers(state.charts.comparar, 'comparar');
+  setupScrollbar('comparar');
   syncToolbar('comparar', 'tools-comparar');
   state.charts.comparar.update('none');
+  updateScrollbar('comparar');
   note.textContent = datasets.length>12 ? 'Muchas combinaciones a la vez pueden saturar el gráfico — probá acotar sectores o bancos.' : (periods.length<2 ? `Mostrando ${periods.length} período. Sumá más meses (o ampliá el rango) para ver tendencia.` : '');
 }
 
@@ -1573,28 +1706,6 @@ function exportSummary(){
 }
 document.getElementById('btn-export').addEventListener('click', exportSummary);
 
-/* ============================== descargar data/creditos-sector.json ============================== */
-/* Alternativa al boletín .xlsm pesado: el navegador ya hizo el trabajo de extraer los datos
-   (al cargar el archivo más arriba), así que esto arma el mismo JSON liviano que produce la
-   Action de GitHub y lo descarga — se puede subir directo a data/creditos-sector.json sin
-   pasar el .xlsm de ~15 MB por la web de GitHub. */
-function exportDataJson(){
-  const payload = {
-    actualizado: new Date().toISOString(),
-    records: state.records,
-  };
-  const blob = new Blob([JSON.stringify(payload, null, 2) + '\n'], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'creditos-sector.json';
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-}
-document.getElementById('btn-export-json').addEventListener('click', exportDataJson);
-
 /* ============================== autocarga (data/creditos-sector.json) ============================== */
 /* Si esta página está publicada (ej. GitHub Pages) y existe data/creditos-sector.json —
    generado mensualmente por .github/workflows/actualizar-boletin.yml — lo cargamos solo,
@@ -1619,6 +1730,36 @@ async function tryAutoLoad(){
     document.getElementById('auto-banner').classList.remove('hidden');
   }catch(err){ /* ver comentario arriba */ }
 }
+/* ============================== tema claro / oscuro ============================== */
+/* El tema inicial ya se fijó en el <head> (para evitar parpadeo). Acá solo manejamos el botón
+   de la barra superior y volvemos a dibujar los gráficos con los colores del tema elegido. */
+const THEME_ICONS = {
+  sun:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>',
+  moon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',
+};
+function updateThemeToggle(theme){
+  const btn = document.getElementById('theme-toggle');
+  if (!btn) return;
+  // En modo oscuro mostramos un sol (clic = pasar a claro); en claro, una luna (clic = pasar a oscuro).
+  btn.innerHTML = theme==='light' ? THEME_ICONS.moon : THEME_ICONS.sun;
+  btn.title = theme==='light' ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro';
+}
+function applyTheme(theme){
+  document.documentElement.setAttribute('data-theme', theme);
+  try{ localStorage.setItem('bcp-theme', theme); }catch(e){}
+  updateThemeToggle(theme);
+  if (state.records && state.records.length) renderActiveTab(); // recolorea los gráficos
+}
+(function initTheme(){
+  const current = document.documentElement.getAttribute('data-theme') || 'dark';
+  updateThemeToggle(current);
+  const btn = document.getElementById('theme-toggle');
+  if (btn) btn.addEventListener('click', ()=>{
+    const next = document.documentElement.getAttribute('data-theme')==='light' ? 'dark' : 'light';
+    applyTheme(next);
+  });
+})();
+
 tryAutoLoad();
 </script>
 </body>
